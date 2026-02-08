@@ -241,8 +241,9 @@ const RegistrationForm = () => {
   };
 
   // 3. Submit Form
+  // 3. Submit Form (FIXED FOR PRODUCTION)
   const handleSubmit = async () => {
-    // Validasi Akhir
+    // Validasi Akhir Data Kontak Darurat
     if (
       !formData.emergencyName ||
       !formData.emergencyPhone ||
@@ -252,6 +253,7 @@ const RegistrationForm = () => {
       return;
     }
 
+    // Validasi Kategori Lari
     if (!formData.category) {
       alert("Harap pilih Kategori Lari!");
       return;
@@ -261,11 +263,16 @@ const RegistrationForm = () => {
     try {
       const finalJerseySize = `${formData.jerseyType}-${formData.jerseySize}`;
 
-      // Harga dinamis (bisa diambil dari backend config idealnya)
-      // Disini hardcode sementara, nanti bisa diganti data dari API
+      // Harga dinamis sesuai kategori (Pastikan sinkron dengan backend)
       const price = formData.category === "5K" ? 150000 : 125000;
 
-      const response = await axios.post("http://localhost:5001/api/register", {
+      // --- PERBAIKAN UTAMA: MENGGUNAKAN API URL DINAMIS ---
+      // Ini akan mencegah error net::ERR_CONNECTION_REFUSED di Vercel
+      const apiUrl =
+        import.meta.env.VITE_API_URL ||
+        "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
+
+      const response = await axios.post(`${apiUrl}/api/register`, {
         ...formData,
         pricePaid: price,
         jerseySize: finalJerseySize,
@@ -278,11 +285,14 @@ const RegistrationForm = () => {
 
       if (response.data.success) {
         setSuccessData(response.data.data);
-        setStep(3);
-        window.scrollTo(0, 0);
+        setStep(3); // Pindah ke halaman sukses
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (error) {
-      const msg = error.response?.data?.message || error.message;
+      // Menangkap pesan error spesifik dari server
+      const msg =
+        error.response?.data?.message || "Terjadi kesalahan koneksi ke server.";
+      console.error("🔥 Registration Error:", error);
       alert(`Gagal Register: ${msg}`);
     } finally {
       setLoading(false);
