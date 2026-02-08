@@ -17,6 +17,7 @@ const AdminDashboard = () => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [resumeScan, setResumeScan] = useState(null);
+
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
     type: "confirm",
@@ -28,6 +29,25 @@ const AdminDashboard = () => {
 
   const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
+  // --- 1. SETTING GLOBAL AXIOS INTERCEPTOR ---
+  // Ini memastikan SETIAP request Axios akan membawa Token secara otomatis
+  useEffect(() => {
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("adminToken");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        config.withCredentials = true; // Selalu sertakan cookie jika ada
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    // Bersihkan interceptor saat komponen unmount
+    return () => axios.interceptors.request.eject(requestInterceptor);
+  }, []);
+
   useEffect(() => {
     document.title = "Admin Dashboard | Surabaya Heritage Run";
   }, []);
@@ -37,13 +57,14 @@ const AdminDashboard = () => {
       isOpen: true,
       type: "danger",
       title: "Keluar dari Panel?",
-      message:
-        "Sesi Anda akan diakhiri. Anda perlu login kembali untuk mengakses halaman ini.",
+      message: "Sesi Anda akan diakhiri. Anda perlu login kembali.",
       confirmText: "Ya, Keluar",
       cancelText: "Batal",
       onCancel: closeAlert,
       onConfirm: () => {
         localStorage.removeItem("isAdminAuthenticated");
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminData");
         navigate("/login");
       },
     });
@@ -54,10 +75,8 @@ const AdminDashboard = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-      // Request dengan withCredentials wajib untuk Cross-Origin Auth
-      const res = await axios.get(`${apiUrl}/api/admin/participants`, {
-        withCredentials: true,
-      });
+      // Request sekarang lebih bersih karena token diurus oleh Interceptor
+      const res = await axios.get(`${apiUrl}/api/admin/participants`);
 
       if (res.data.success) {
         const found = res.data.data.find((p) => p._id === id);
@@ -88,12 +107,13 @@ const AdminDashboard = () => {
         title: isUnauthorized ? "Sesi Berakhir" : "Gagal Memuat Data",
         message: isUnauthorized
           ? "Sesi login Anda telah habis atau tidak valid. Silakan login kembali."
-          : "Terjadi kesalahan koneksi ke server. Pastikan backend aktif.",
+          : "Terjadi kesalahan koneksi ke server.",
         confirmText: isUnauthorized ? "Ke Halaman Login" : "Tutup",
         onConfirm: () => {
           closeAlert();
           if (isUnauthorized) {
             localStorage.removeItem("isAdminAuthenticated");
+            localStorage.removeItem("adminToken");
             navigate("/login");
           } else if (resumeFunc) {
             resumeFunc();
@@ -121,6 +141,7 @@ const AdminDashboard = () => {
         <div className="md:hidden flex justify-between items-center mb-6 bg-slate-900 text-white p-4 rounded-xl shadow-lg">
           <h1 className="font-serif font-bold text-lg">Admin Panel</h1>
         </div>
+
         {activeTab === "settings" ? (
           <SettingsPanel />
         ) : activeTab === "scan" ? (
@@ -131,6 +152,7 @@ const AdminDashboard = () => {
           <DashboardPanel />
         )}
       </div>
+
       {isScanModalOpen && scanResult && (
         <ScanModal
           participant={scanResult}

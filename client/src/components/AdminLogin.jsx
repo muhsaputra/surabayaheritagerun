@@ -25,30 +25,34 @@ const AdminLogin = () => {
     setError("");
   };
 
-  // --- LOGIKA LOGIN (UPDATED UNTUK DEPLOYMENT) ---
+  // --- LOGIKA LOGIN (FIXED UNTUK CORS & AUTH HEADER) ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      // Menggunakan variabel env agar URL otomatis menyesuaikan saat deploy
+      // Mengambil URL API dari environment variable
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-      const res = await axios.post(`${API_URL}/api/admin/login`, formData);
+      // Melakukan POST login dengan withCredentials agar cookie tersimpan
+      const res = await axios.post(`${API_URL}/api/admin/login`, formData, {
+        withCredentials: true,
+      });
 
       if (res.data.success) {
-        // Simpan Token dan Data Admin ke LocalStorage
+        // 1. SIMPAN TOKEN KE LOCALSTORAGE (WAJIB agar Header tidak Missing)
         localStorage.setItem("adminToken", res.data.token);
-        localStorage.setItem("adminData", JSON.stringify(res.data.admin));
 
-        // Simpan status legacy agar kompatibel dengan sistem lama
+        // 2. Simpan Data Admin dan Status Autentikasi
+        localStorage.setItem("adminData", JSON.stringify(res.data.admin));
         localStorage.setItem("isAdminAuthenticated", "true");
 
-        // Arahkan ke Dashboard
+        // 3. Arahkan ke Dashboard
         navigate("/admin");
       }
     } catch (err) {
+      console.error("Login Error:", err);
       const message =
         err.response?.data?.message ||
         "Gagal terhubung ke server. Pastikan backend aktif.";
