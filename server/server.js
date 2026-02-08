@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser"); // 1. IMPORT COOKIE PARSER
 const connectDB = require("./config/db");
 const path = require("path");
 
@@ -17,7 +18,7 @@ connectDB();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://surabayaheritagerun.vercel.app", // Domain Vercel Anda
+  "https://surabayaheritagerun.vercel.app",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -39,11 +40,8 @@ app.use(
   }),
 );
 
-// Middleware tambahan untuk memastikan cookie diperlakukan dengan benar di lintas domain
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", "true");
-  next();
-});
+// 2. GUNAKAN COOKIE PARSER (Letakkan SEBELUM routing)
+app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

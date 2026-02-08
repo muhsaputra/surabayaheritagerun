@@ -19,11 +19,20 @@ exports.login = async (req, res) => {
         .json({ success: false, message: "Password salah" });
     }
 
-    // Buat Token JWT (Berlaku 1 hari)
+    // 1. Buat Token JWT
     const token = jwt.sign({ id: admin._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
+    // 2. Kirim Token via Cookie (Wajib untuk Vercel -> Koyeb)
+    res.cookie("token", token, {
+      httpOnly: true, // Melindungi dari XSS
+      secure: true, // Wajib true karena HTTPS (Koyeb & Vercel)
+      sameSite: "none", // Wajib 'none' agar cookie bisa dikirim lintas domain
+      maxAge: 24 * 60 * 60 * 1000, // 1 hari
+    });
+
+    // 3. Tetap kirim JSON sebagai cadangan (Opsional)
     res.json({
       success: true,
       token,
