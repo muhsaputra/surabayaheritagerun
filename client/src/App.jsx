@@ -12,7 +12,7 @@ import {
 import logoImage from "../src/assets/images/Logo/SurabayaHeritage.png";
 
 // --- IMPORT HALAMAN ---
-import LandingPage from "./components/LandingPage";
+import Landing from "./components/Landing";
 import RegistrationForm from "./components/RegistrationForm";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import PaymentPage from "./components/PaymentPage";
@@ -68,7 +68,7 @@ function App() {
            ========================================= */}
         <Routes>
           {/* --- HALAMAN PUBLIK --- */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Landing />} />
           <Route path="/register" element={<RegistrationForm />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="/check-status" element={<CheckStatusPage />} />
