@@ -5,25 +5,28 @@ const protect = async (req, res, next) => {
   let token;
 
   // --- DEBUG LOG UNTUK PRODUCTION ---
+  // Membantu melacak apakah token masuk lewat Header atau Cookie
   console.log("🔍 [AUTH CHECK] Origin:", req.headers.origin);
-  console.log("🔍 [AUTH CHECK] Cookies received:", req.cookies); // Cek apakah 'token' ada di sini
+  console.log("🔍 [AUTH CHECK] Cookies:", req.cookies ? "Received" : "Empty");
+
+  const authHeader = req.headers.authorization;
   console.log(
     "🔍 [AUTH CHECK] Auth Header:",
-    req.headers.authorization ? "Present" : "Missing",
+    authHeader ? "Present" : "Missing",
   );
 
   // 1. Cek token di Header Authorization (Bearer Token)
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
-    token = req.headers.authorization.split(" ")[1];
+  if (authHeader && authHeader.startsWith("Bearer")) {
+    token = authHeader.split(" ")[1];
+    console.log("🎫 Token detected in Header");
   }
-  // 2. Cek token di Cookie (Solusi Utama Vercel -> Koyeb)
+  // 2. Cek token di Cookie (Cadangan jika Header gagal)
   else if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
+    console.log("🎫 Token detected in Cookie");
   }
 
+  // Jika tidak ada token sama sekali
   if (!token) {
     console.error("❌ [AUTH ERROR] No token found in request");
     return res.status(401).json({
@@ -33,32 +36,39 @@ const protect = async (req, res, next) => {
   }
 
   try {
-    // Verifikasi Token
+    // Verifikasi Token menggunakan Secret dari Environment Variable
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Validasi Ekstra: Pastikan Admin masih ada
+    // Validasi Ekstra: Pastikan Admin masih ada di Database
     const currentAdmin = await Admin.findById(decoded.id).select("-password");
 
     if (!currentAdmin) {
-      console.error("❌ [AUTH ERROR] Admin not found in DB");
+      console.error("❌ [AUTH ERROR] Admin ID not found in database");
       return res.status(401).json({
         success: false,
         message: "Akun admin tidak terdaftar.",
       });
     }
 
+    // Simpan data admin ke objek request
     req.admin = currentAdmin;
     console.log("✅ [AUTH SUCCESS] Access granted for:", currentAdmin.username);
     next();
   } catch (error) {
     console.error("🔥 [AUTH ERROR] JWT Verification Failed:", error.message);
 
-    // Jika JWT_SECRET di Koyeb berbeda, verifikasi akan selalu gagal di sini
+    // Memberikan respon spesifik jika token kadaluwarsa
+    const msg =
+      error.name === "TokenExpiredError"
+        ? "Sesi Anda telah berakhir, silakan login ulang."
+        : "Sesi tidak valid.";
+
     return res.status(401).json({
       success: false,
-      message: "Sesi kadaluwarsa atau tidak valid.",
+      message: msg,
     });
   }
 };
 
+// Pastikan ekspor menggunakan objek agar sesuai dengan require({ protect }) di routes
 module.exports = { protect };
