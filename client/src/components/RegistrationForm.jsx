@@ -167,7 +167,11 @@ const RegistrationForm = () => {
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        const res = await axios.get("http://localhost:5001/api/landing/config");
+        // --- UPDATE URL API ---
+        // Menggunakan variabel environment agar bisa memanggil backend di Koyeb
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+        const res = await axios.get(`${apiUrl}/api/landing/config`);
+
         if (res.data.success) {
           const data = res.data.data;
           setEventStatus({ ...data, loading: false });
@@ -184,6 +188,7 @@ const RegistrationForm = () => {
           }
         }
       } catch (error) {
+        // Jika muncul error di sini pada Vercel, pastikan CORS di Koyeb sudah mengizinkan domain Vercel
         setEventStatus({
           loading: false,
           isRegistrationOpen: false,

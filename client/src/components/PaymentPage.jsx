@@ -99,10 +99,16 @@ const PaymentPage = () => {
     formData.append("id", userData._id);
 
     try {
-      const response = await fetch("http://localhost:5001/api/payment/upload", {
+      // --- PERBAIKAN CORS DI SINI ---
+      // Menggunakan VITE_API_URL agar memanggil server Koyeb, bukan localhost laptop
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
+      const response = await fetch(`${apiUrl}/api/payment/upload`, {
         method: "POST",
         body: formData,
+        // Pastikan backend Koyeb Anda sudah di-update cors-nya untuk menerima request ini
       });
+
       const result = await response.json();
       if (!response.ok)
         throw new Error(result.message || "Gagal upload gambar");

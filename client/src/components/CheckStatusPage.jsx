@@ -376,15 +376,20 @@ const CheckStatusPage = () => {
     setIsTicketLoaded(false);
 
     try {
-      // GANTI URL SESUAI BACKEND ANDA
-      const res = await axios.post("http://localhost:5001/api/check-status", {
+      // --- UPDATE CORS & URL API ---
+      // Menggunakan variabel environment agar memanggil server Koyeb saat online
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
+      const res = await axios.post(`${apiUrl}/api/check-status`, {
         email,
       });
+
       if (res.data.success) {
         setResult(res.data.data);
         setTimeout(() => setIsTicketLoaded(true), 100);
       }
     } catch (err) {
+      // Jika error 403/401 muncul di konsol, itu tandanya kebijakan CORS di backend belum mengizinkan domain Vercel
       setError("Data tidak ditemukan. Pastikan email yang dimasukkan benar.");
     } finally {
       setLoading(false);
