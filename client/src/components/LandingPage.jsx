@@ -20,7 +20,6 @@ import {
   Lock,
 } from "lucide-react";
 
-// --- IMPORT GAMBAR DARI ASSETS ---
 // Pastikan file fisik di folder Anda benar-benar menggunakan ekstensi ini (.png/.jpg/.JPG)
 import heroImage from "../assets/images/GambarUtama.png";
 import gallery1 from "../assets/images/gallery1.jpg";
