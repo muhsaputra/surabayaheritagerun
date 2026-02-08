@@ -4,53 +4,49 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const path = require("path");
 
-// ==========================================
-// 1. IMPORT ROUTES
-// ==========================================
 const adminRoutes = require("./routes/adminRoutes");
 const apiRoutes = require("./routes/apiRoutes");
 
 const app = express();
 
-// 2. Hubungkan Database
 connectDB();
 
 // ==========================================
-// 3. MIDDLEWARE (UPDATED FOR DEPLOYMENT)
+// 3. MIDDLEWARE (FIXED FOR CORS ERROR)
 // ==========================================
 
-// Atur CORS agar hanya mengizinkan domain Frontend Anda
 const allowedOrigins = [
-  "http://localhost:5173", // Development
-  process.env.FRONTEND_URL, // URL Vercel (diatur di Railway)
-];
+  "http://localhost:5173",
+  "https://surabayaheritagerun.vercel.app", // Domain utama Vercel Anda
+  process.env.FRONTEND_URL, // Tetap gunakan variabel environment
+].filter(Boolean); // Menghapus nilai null/undefined jika FRONTEND_URL belum diatur
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Izinkan request tanpa origin (seperti dari Postman atau server-to-server)
+      // Izinkan request tanpa origin (seperti Postman)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
+
+      // Cek apakah origin ada di daftar allowedOrigins
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.error(`🚫 CORS Blocked for origin: ${origin}`);
         const msg =
-          "CORS policy ini tidak mengizinkan akses dari origin yang Anda gunakan.";
+          "CORS policy ini tidak mengizinkan akses dari origin tersebut.";
         return callback(new Error(msg), false);
       }
-      return callback(null, true);
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Folder uploads untuk menyimpan bukti pembayaran peserta
-// Buat folder "uploads" di root server jika belum ada
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// ==========================================
-// 4. ROUTING UTAMA
-// ==========================================
 
 app.use("/api/admin", adminRoutes);
 app.use("/api", apiRoutes);
@@ -59,29 +55,19 @@ app.get("/", (req, res) => {
   res.send("API Surabaya Heritage Run 2026 - Production Ready 🏃💨");
 });
 
-// ==========================================
-// 5. GLOBAL ERROR HANDLER
-// ==========================================
 app.use((err, req, res, next) => {
   console.error("🔥 SERVER ERROR LOG:", err.stack);
-
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-
   res.status(statusCode).json({
     success: false,
     message: err.message || "Terjadi kesalahan internal pada server.",
-    // Sembunyikan stack trace di production demi keamanan
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 });
 
-// ==========================================
-// 6. JALANKAN SERVER
-// ==========================================
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(
-    `🚀 Server berjalan di mode ${process.env.NODE_ENV || "development"}`,
+    `🚀 Server berjalan di mode ${process.env.NODE_ENV || "production"}`,
   );
-  console.log(`📡 URL: http://localhost:${PORT}`);
 });
