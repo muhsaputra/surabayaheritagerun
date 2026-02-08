@@ -96,7 +96,8 @@ function App() {
             path="*"
             element={
               <footer className="text-center text-gray-400 text-xs py-10 mt-auto bg-slate-50 border-t border-slate-100">
-                &copy; 2026 Surabaya Heritage Run. All rights reserved.
+                &copy; 2026 Surabaya Heritage Run - Final Build. All rights
+                reserved.
               </footer>
             }
           />
