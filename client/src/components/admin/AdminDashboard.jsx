@@ -63,9 +63,11 @@ const AdminDashboard = () => {
     setResumeScan(() => resumeFunc);
 
     try {
-      const res = await axios.get(
-        "http://localhost:5001/api/admin/participants",
-      );
+      // --- PERBAIKAN URL API ---
+      // Menggunakan variabel environment agar memanggil server Koyeb di production
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+
+      const res = await axios.get(`${apiUrl}/api/admin/participants`);
 
       if (res.data.success) {
         const found = res.data.data.find((p) => p._id === id);
@@ -74,7 +76,6 @@ const AdminDashboard = () => {
           setScanResult(found);
           setIsScanModalOpen(true);
         } else {
-          // Ganti alert biasa dengan Modal Error
           setAlertConfig({
             isOpen: true,
             type: "error",
@@ -89,11 +90,14 @@ const AdminDashboard = () => {
         }
       }
     } catch (error) {
+      // Log error ke konsol untuk membantu debugging jika CORS masih bermasalah
+      console.error("🔥 Scan Error:", error);
+
       setAlertConfig({
         isOpen: true,
         type: "error",
         title: "Gagal Memuat Data",
-        message: "Terjadi kesalahan koneksi ke server.",
+        message: "Terjadi kesalahan koneksi ke server. Pastikan backend aktif.",
         confirmText: "Tutup",
         onConfirm: () => {
           closeAlert();
