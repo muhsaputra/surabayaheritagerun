@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 // --- IMPORT GAMBAR DARI ASSETS ---
+// Pastikan file fisik di folder Anda benar-benar menggunakan ekstensi ini (.png/.jpg/.JPG)
 import heroImage from "../assets/images/GambarUtama.png";
 import gallery1 from "../assets/images/gallery1.jpg";
 import gallery2 from "../assets/images/gallery2.jpg";
@@ -37,19 +38,18 @@ const LandingPage = () => {
   // --- STATE UNTUK TIMELINE & HARGA ---
   const [timelineData, setTimelineData] = useState(null);
   const [loadingTimeline, setLoadingTimeline] = useState(true);
-  const [activePrices, setActivePrices] = useState({ "5K": 0, "3K": 0 }); // Default harga 0 dulu
+  const [activePrices, setActivePrices] = useState({ "5K": 0, "3K": 0 });
 
   // --- 1. FETCH DATA DARI BACKEND ---
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/landing/config`,
-        );
+        // Menggunakan Environment Variable agar jalan di Vercel & Koyeb
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
+        const res = await axios.get(`${apiUrl}/api/landing/config`);
+
         if (res.data.success) {
           setTimelineData(res.data.data);
-
-          // Set Harga Aktif jika ada
           if (res.data.data.activePrices) {
             setActivePrices(res.data.data.activePrices);
           }
@@ -64,13 +64,11 @@ const LandingPage = () => {
     fetchConfig();
   }, []);
 
-  // Helper Format Rupiah
   const formatPrice = (price) => {
     if (!price) return "-";
-    return price / 1000 + "k"; // Ubah 150000 jadi 150k
+    return price / 1000 + "k";
   };
 
-  // Helper Icon Timeline
   const getTimelineIcon = (name) => {
     const n = name.toLowerCase();
     if (n.includes("presale")) return <Flame size={28} />;
@@ -78,7 +76,6 @@ const LandingPage = () => {
     return <CalendarRange size={28} />;
   };
 
-  // Data Foto Galeri
   const galleryImages = [
     gallery1,
     gallery2,
@@ -98,8 +95,8 @@ const LandingPage = () => {
           <img
             src={heroImage}
             alt="Surabaya Heritage Run Hero"
-            fetchPriority="high" // Prioritas tinggi
-            loading="eager" // Muat segera
+            fetchPriority="high"
+            loading="eager"
             decoding="sync"
             className="w-full h-full object-cover object-center"
           />
@@ -323,26 +320,19 @@ const LandingPage = () => {
         )}
       </div>
 
-      {/* --- KATEGORI LARI (UPDATED: PHOTO BACKGROUND) --- */}
+      {/* --- KATEGORI LARI --- */}
       <div className="relative py-24 overflow-hidden">
-        {/* 1. BACKGROUND IMAGE (Ganti src dengan gambar yang diinginkan) */}
         <div className="absolute inset-0 z-0">
           <img
-            src={heroImage} // Bisa diganti dengan gallery5 atau gambar lain
+            src={heroImage}
             alt="Background Kategori"
             loading="lazy"
             className="w-full h-full object-cover object-center"
           />
         </div>
-
-        {/* 2. DARK OVERLAY (Membuat foto jadi gelap agar teks terbaca) */}
-        {/* Opacity 85% (bg-slate-900/85) membuat gambar terlihat samar di belakang */}
         <div className="absolute inset-0 z-0 bg-slate-900/85 mix-blend-multiply"></div>
-
-        {/* 3. GRADIENT ACCENT (Opsional: Agar transisi atas/bawah halus) */}
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-900/80 via-transparent to-slate-900/80"></div>
 
-        {/* --- KONTEN UTAMA (Relative z-10 agar di atas background) --- */}
         <div className="text-center px-4 max-w-4xl mx-auto mb-16 relative z-10">
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6 drop-shadow-lg">
             Pilih Kategori Lari
@@ -396,7 +386,6 @@ const LandingPage = () => {
                     Biaya Pendaftaran
                   </p>
                   <div className="flex items-end gap-2 mb-6">
-                    {/* 👇 HARGA DINAMIS */}
                     <span className="text-4xl font-black text-slate-900">
                       {formatPrice(activePrices["5K"])}
                     </span>
@@ -450,7 +439,6 @@ const LandingPage = () => {
                     Biaya Pendaftaran
                   </p>
                   <div className="flex items-end gap-2 mb-6">
-                    {/* 👇 HARGA DINAMIS */}
                     <span className="text-4xl font-black text-slate-900">
                       {formatPrice(activePrices["3K"])}
                     </span>
@@ -501,7 +489,7 @@ const LandingPage = () => {
                 <img
                   src={src}
                   alt={`Galeri ${idx}`}
-                  loading="lazy" // Lazy load gambar galeri
+                  loading="lazy"
                   decoding="async"
                   className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-110"
                 />
