@@ -63,11 +63,12 @@ const AdminDashboard = () => {
     setResumeScan(() => resumeFunc);
 
     try {
-      // --- PERBAIKAN URL API ---
-      // Menggunakan variabel environment agar memanggil server Koyeb di production
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-      const res = await axios.get(`${apiUrl}/api/admin/participants`);
+      // TAMBAHKAN withCredentials: true agar cookie login terkirim ke server Koyeb
+      const res = await axios.get(`${apiUrl}/api/admin/participants`, {
+        withCredentials: true,
+      });
 
       if (res.data.success) {
         const found = res.data.data.find((p) => p._id === id);
@@ -90,18 +91,27 @@ const AdminDashboard = () => {
         }
       }
     } catch (error) {
-      // Log error ke konsol untuk membantu debugging jika CORS masih bermasalah
       console.error("🔥 Scan Error:", error);
+
+      // Jika error 401, arahkan admin untuk login ulang
+      const isUnauthorized = error.response?.status === 401;
 
       setAlertConfig({
         isOpen: true,
         type: "error",
-        title: "Gagal Memuat Data",
-        message: "Terjadi kesalahan koneksi ke server. Pastikan backend aktif.",
-        confirmText: "Tutup",
+        title: isUnauthorized ? "Sesi Berakhir" : "Gagal Memuat Data",
+        message: isUnauthorized
+          ? "Sesi login Anda telah habis. Silakan login kembali untuk melanjutkan pemindaian."
+          : "Terjadi kesalahan koneksi ke server. Pastikan backend aktif.",
+        confirmText: isUnauthorized ? "Ke Halaman Login" : "Tutup",
         onConfirm: () => {
           closeAlert();
-          if (resumeFunc) resumeFunc();
+          if (isUnauthorized) {
+            localStorage.removeItem("isAdminAuthenticated");
+            navigate("/login");
+          } else if (resumeFunc) {
+            resumeFunc();
+          }
         },
       });
     }
