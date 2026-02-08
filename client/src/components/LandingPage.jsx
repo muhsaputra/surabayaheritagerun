@@ -26,7 +26,6 @@ import gallery1 from "../assets/images/gallery1.jpg";
 import gallery2 from "../assets/images/gallery2.jpg";
 import gallery3 from "../assets/images/gallery3.JPG";
 import gallery4 from "../assets/images/gallery4.jpg";
-import gallery5 from "../assets/images/foto_galeri_5.jpg";
 import gallery6 from "../assets/images/foto_galeri_6.jpg";
 import gallery7 from "../assets/images/gallery7.jpg";
 import gallery8 from "../assets/images/gallery8.jpg";
@@ -80,7 +79,6 @@ const LandingPage = () => {
     gallery2,
     gallery3,
     gallery4,
-    gallery5,
     gallery6,
     gallery7,
     gallery8,
