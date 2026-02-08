@@ -12,41 +12,47 @@ const app = express();
 connectDB();
 
 // ==========================================
-// 3. MIDDLEWARE (FIXED FOR CORS ERROR)
+// 3. MIDDLEWARE (ENHANCED FOR AUTH & CORS)
 // ==========================================
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://surabayaheritagerun.vercel.app", // Domain utama Vercel Anda
-  process.env.FRONTEND_URL, // Tetap gunakan variabel environment
-].filter(Boolean); // Menghapus nilai null/undefined jika FRONTEND_URL belum diatur
+  "https://surabayaheritagerun.vercel.app", // Domain Vercel Anda
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Izinkan request tanpa origin (seperti Postman)
       if (!origin) return callback(null, true);
 
-      // Cek apakah origin ada di daftar allowedOrigins
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       } else {
         console.error(`🚫 CORS Blocked for origin: ${origin}`);
-        const msg =
-          "CORS policy ini tidak mengizinkan akses dari origin tersebut.";
-        return callback(new Error(msg), false);
+        return callback(new Error("CORS policy: Access Denied"), false);
       }
     },
-    credentials: true,
+    credentials: true, // Wajib TRUE agar cookie login bisa terkirim
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
+// Middleware tambahan untuk memastikan cookie diperlakukan dengan benar di lintas domain
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ==========================================
+// 4. ROUTING
+// ==========================================
 
 app.use("/api/admin", adminRoutes);
 app.use("/api", apiRoutes);
