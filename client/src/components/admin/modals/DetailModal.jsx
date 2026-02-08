@@ -15,6 +15,7 @@ import {
   ShieldAlert,
   CalendarDays,
   ExternalLink,
+  Shirt,
 } from "lucide-react";
 import { getProofUrl } from "../utils/adminHelpers";
 import AlertModal from "../modals/AlertModal";
