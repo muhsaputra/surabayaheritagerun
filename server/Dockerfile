@@ -1,20 +1,17 @@
-# Gunakan image Node.js versi 18
-FROM node:18-alpine
+FROM node:18-bullseye-slim
 
-# Set folder kerja di dalam container
 WORKDIR /app
 
-# Copy package.json dan package-lock.json
+# Copy package files
 COPY package*.json ./
 
-# Install dependensi (termasuk devDependencies agar build tidak error)
-RUN npm install
+# Hapus cache dan install dependensi dengan flag --legacy-peer-deps 
+# untuk menghindari konflik versi
+RUN npm cache clean --force && npm install --legacy-peer-deps
 
-# Copy semua file dari folder server ke dalam container
+# Copy sisa kode
 COPY . .
 
-# Expose port yang digunakan (5001 sesuai .env Anda)
 EXPOSE 5001
 
-# Jalankan aplikasi
 CMD ["node", "server.js"]
