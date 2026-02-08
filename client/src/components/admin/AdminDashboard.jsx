@@ -27,26 +27,45 @@ const AdminDashboard = () => {
     onCancel: null,
   });
 
+  // URL API Utama (Pastikan tidak ada '/' di akhir)
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
+
   const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
-  // --- 1. SETTING GLOBAL AXIOS INTERCEPTOR ---
-  // Ini memastikan SETIAP request Axios akan membawa Token secara otomatis
+  // --- 1. GLOBAL AXIOS CONFIGURATION ---
   useEffect(() => {
+    // Interceptor untuk menyisipkan Token dan memaksakan Base URL
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem("adminToken");
+
+        // Sisipkan Token Bearer untuk melewati proteksi middleware
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-        config.withCredentials = true; // Selalu sertakan cookie jika ada
+
+        // Aktifkan kredensial untuk cookie lintas domain
+        config.withCredentials = true;
+
+        // PROTEKSI: Jika request masih mengarah ke localhost, arahkan ke Koyeb
+        if (
+          config.url &&
+          (config.url.startsWith("http://localhost") ||
+            config.url.startsWith("/api"))
+        ) {
+          const path = config.url.split("/api")[1];
+          config.url = `${API_URL}/api${path}`;
+        }
+
         return config;
       },
       (error) => Promise.reject(error),
     );
 
-    // Bersihkan interceptor saat komponen unmount
     return () => axios.interceptors.request.eject(requestInterceptor);
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
     document.title = "Admin Dashboard | Surabaya Heritage Run";
@@ -73,10 +92,8 @@ const AdminDashboard = () => {
   const processScanResult = async (id, resumeFunc) => {
     setResumeScan(() => resumeFunc);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-
-      // Request sekarang lebih bersih karena token diurus oleh Interceptor
-      const res = await axios.get(`${apiUrl}/api/admin/participants`);
+      // Pemanggilan API kini otomatis diarahkan ke Koyeb oleh interceptor
+      const res = await axios.get(`${API_URL}/api/admin/participants`);
 
       if (res.data.success) {
         const found = res.data.data.find((p) => p._id === id);

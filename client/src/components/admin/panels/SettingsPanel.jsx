@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // 👈 Tambahkan useNavigate
+import { useNavigate } from "react-router-dom";
 import {
   ToggleRight,
   ToggleLeft,
@@ -10,7 +10,6 @@ import {
   Circle,
   Lock,
   Unlock,
-  Users,
   Banknote,
 } from "lucide-react";
 
@@ -22,27 +21,32 @@ const SettingsPanel = () => {
   const [saving, setSaving] = useState(false);
   const [activePhaseIndex, setActivePhaseIndex] = useState(0);
 
+  // --- SOLUSI: Gunakan API_URL dari Env agar tidak menembak localhost ---
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
+
   useEffect(() => {
     fetchConfigAndStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- LOGIKA FETCH DENGAN TOKEN ---
   const fetchConfigAndStats = async () => {
     try {
-      const token = localStorage.getItem("adminToken"); // 👈 Ambil token
+      const token = localStorage.getItem("adminToken");
       const headers = { Authorization: `Bearer ${token}` };
 
-      // 1. Fetch Config
-      const resConfig = await axios.get(
-        "http://localhost:5001/api/admin/config",
-        { headers }, // 👈 Kirim headers
-      );
-
-      // 2. Fetch Participant Stats
-      const resStats = await axios.get(
-        "http://localhost:5001/api/admin/stats-count",
-        { headers }, // 👈 Kirim headers
-      );
+      // Menggunakan API_URL dinamis untuk menghindari net::ERR_CONNECTION_REFUSED
+      const [resConfig, resStats] = await Promise.all([
+        axios.get(`${API_URL}/api/admin/config`, {
+          headers,
+          withCredentials: true,
+        }),
+        axios.get(`${API_URL}/api/admin/stats-count`, {
+          headers,
+          withCredentials: true,
+        }),
+      ]);
 
       if (resConfig.data.success) {
         setConfig(resConfig.data.data);
@@ -56,16 +60,17 @@ const SettingsPanel = () => {
       }
     } catch (error) {
       console.error("Gagal memuat data", error);
-      // Jika token tidak valid, arahkan ke login
+      // Jika error 401 (Unauthorized), paksa login ulang
       if (error.response?.status === 401) {
-        navigate("/admin/login");
+        localStorage.removeItem("isAdminAuthenticated");
+        localStorage.removeItem("adminToken");
+        navigate("/login");
       }
     } finally {
       setLoading(false);
     }
   };
 
-  // --- LOGIKA SAVE DENGAN TOKEN ---
   const handleSave = async () => {
     if (!confirm("Simpan perubahan Harga, Kuota & Fase Aktif?")) return;
     setSaving(true);
@@ -77,17 +82,16 @@ const SettingsPanel = () => {
     };
 
     try {
-      await axios.post(
-        "http://localhost:5001/api/admin/config",
-        payload,
-        { headers: { Authorization: `Bearer ${token}` } }, // 👈 Kirim headers
-      );
+      await axios.post(`${API_URL}/api/admin/config`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
       alert("✅ Pengaturan Berhasil Disimpan!");
     } catch (error) {
       alert(
         "Gagal menyimpan: " + (error.response?.data?.message || error.message),
       );
-      if (error.response?.status === 401) navigate("/admin/login");
+      if (error.response?.status === 401) navigate("/login");
     } finally {
       setSaving(false);
     }
@@ -140,13 +144,22 @@ const SettingsPanel = () => {
   if (loading)
     return (
       <div className="p-10 text-center text-slate-500 font-bold animate-pulse">
-        Memuat Pengaturan Keamanan...
+        Sinkronisasi Data Server...
       </div>
     );
+
   if (!config)
     return (
-      <div className="p-10 text-center text-red-500 font-bold">
-        Gagal memuat data konfigurasi.
+      <div className="p-10 text-center">
+        <p className="text-red-500 font-bold mb-4">
+          Gagal memuat data konfigurasi.
+        </p>
+        <button
+          onClick={fetchConfigAndStats}
+          className="text-blue-600 underline"
+        >
+          Coba Lagi
+        </button>
       </div>
     );
 
@@ -208,11 +221,7 @@ const SettingsPanel = () => {
               <div
                 key={index}
                 onClick={() => setActivePhaseIndex(index)}
-                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 relative ${
-                  isActive
-                    ? "bg-white border-red-600 shadow-xl scale-[1.01]"
-                    : "bg-slate-50 border-slate-200 opacity-70 hover:opacity-100 hover:border-red-200"
-                }`}
+                className={`p-6 rounded-2xl border-2 cursor-pointer transition-all duration-300 relative ${isActive ? "bg-white border-red-600 shadow-xl scale-[1.01]" : "bg-slate-50 border-slate-200 opacity-70 hover:opacity-100 hover:border-red-200"}`}
               >
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="md:w-1/4 border-r border-slate-100 pr-6 flex flex-col justify-center">
