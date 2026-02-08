@@ -26,8 +26,8 @@ import gallery1 from "../assets/images/gallery1.jpg";
 import gallery2 from "../assets/images/gallery2.jpg";
 import gallery3 from "../assets/images/gallery3.JPG";
 import gallery4 from "../assets/images/gallery4.jpg";
-import gallery5 from "../assets/images/gallery5.jpg";
-import gallery6 from "../assets/images/gallery6.jpg";
+import gallery5 from "../assets/images/gallery5.JPG";
+import gallery6 from "../assets/images/gallery6.JPG";
 import gallery7 from "../assets/images/gallery7.jpg";
 import gallery8 from "../assets/images/gallery8.jpg";
 
@@ -43,7 +43,9 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await axios.get("http://localhost:5001/api/landing/config");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/landing/config`,
+        );
         if (res.data.success) {
           setTimelineData(res.data.data);
 
