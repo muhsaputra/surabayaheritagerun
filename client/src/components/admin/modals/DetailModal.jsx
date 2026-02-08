@@ -7,11 +7,11 @@ import {
   BadgeCheck,
   CheckCircle,
   ImageIcon,
-  CalendarClock,
   Tag,
   Wallet,
   Phone,
   MapPin,
+  Mail, // Import Icon Mail
 } from "lucide-react";
 import { getProofUrl } from "../utils/adminHelpers";
 import AlertModal from "../modals/AlertModal";
@@ -25,6 +25,11 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     onConfirm: null,
     onCancel: null,
   });
+
+  // URL API dinamis agar tidak error net::ERR_CONNECTION_REFUSED
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
 
   const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
 
@@ -42,9 +47,15 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
       confirmText: "Ya, Verifikasi",
       onConfirm: async () => {
         try {
-          await axios.post("http://localhost:5001/api/admin/confirm-payment", {
-            id,
-          });
+          const token = localStorage.getItem("adminToken");
+          await axios.post(
+            `${API_URL}/api/admin/confirm-payment`,
+            { id },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+            },
+          );
 
           showAlert({
             type: "success",
@@ -57,7 +68,6 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             },
           });
         } catch (e) {
-          // Menangkap pesan error 400 dari backend
           const errMsg =
             e.response?.data?.message || "Terjadi kesalahan server.";
           showAlert({
@@ -81,7 +91,16 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
       confirmText: "Check-in Sekarang",
       onConfirm: async () => {
         try {
-          await axios.post("http://localhost:5001/api/admin/checkin", { id });
+          const token = localStorage.getItem("adminToken");
+          await axios.post(
+            `${API_URL}/api/admin/checkin`,
+            { id },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+            },
+          );
+
           showAlert({
             type: "success",
             title: "Check-in Berhasil!",
@@ -214,6 +233,11 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 label="NIK / Paspor"
                 value={participant.nik}
                 icon={BadgeCheck}
+              />
+              <DetailItem
+                label="Email Pendaftar" // Penambahan Informasi Email
+                value={participant.email}
+                icon={Mail}
               />
               <DetailItem
                 label="Nomor BIB"
