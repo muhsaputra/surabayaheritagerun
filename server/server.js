@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-const rateLimit = require("express-rate-limit"); // Import rate limiter
+const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
 const path = require("path");
 
@@ -17,24 +17,20 @@ connectDB();
 // ==========================================
 // 1. RATE LIMITER (KEAMANAN NANO INSTANCE)
 // ==========================================
-
-// Limiter umum untuk mencegah serangan DDoS ringan pada RAM Koyeb
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 Menit
-  max: 200, // Batas 200 request per IP
+  windowMs: 15 * 60 * 1000,
+  max: 200,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message:
-      "Terlalu banyak permintaan dari koneksi ini. Silakan coba lagi nanti.",
+    message: "Terlalu banyak permintaan. Silakan coba lagi nanti.",
   },
 });
 
-// Limiter khusus pendaftaran untuk melindungi kuota Cloudinary & Database
 const registerLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 Jam
-  max: 25, // Maksimal 10 kali pendaftaran per IP per jam
+  windowMs: 60 * 60 * 1000,
+  max: 25,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -46,7 +42,6 @@ const registerLimiter = rateLimit({
 // ==========================================
 // 2. MIDDLEWARE (CORS & AUTH)
 // ==========================================
-
 const allowedOrigins = [
   "http://localhost:5173",
   "https://surabayaheritagerun.vercel.app",
@@ -55,63 +50,61 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
+// Konfigurasi CORS yang lebih eksplisit untuk menangani Pre-flight (OPTIONS)
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
       } else {
         console.error(`🚫 CORS Blocked for origin: ${origin}`);
-        return callback(new Error("CORS policy: Access Denied"), false);
+        callback(new Error("CORS policy: Access Denied"));
       }
     },
-    credentials: true, // Wajib TRUE untuk cookie lintas domain
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Accept",
+    ],
+    optionsSuccessStatus: 204, // Penting untuk kompabilitas browser lama/mobile
   }),
 );
 
-app.use(generalLimiter); // Terapkan limiter umum ke semua route
-app.use(cookieParser()); // Parsing cookie sebelum routing
+app.use(generalLimiter);
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Folder static
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ==========================================
 // 3. ROUTING
 // ==========================================
-
-// Terapkan limiter khusus pendaftaran pada route register (jika ada di apiRoutes)
 app.use("/api/register", registerLimiter);
-
 app.use("/api/admin", adminRoutes);
 app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
-  res.send(
-    "API Surabaya Heritage Run 2026 - Production Ready with Protection 🏃💨",
-  );
+  res.send("API Surabaya Heritage Run 2026 - Online 🏃💨");
 });
 
 // ==========================================
 // 4. ERROR HANDLING
 // ==========================================
-
 app.use((err, req, res, next) => {
-  console.error("🔥 SERVER ERROR LOG:", err.stack);
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode).json({
     success: false,
     message: err.message || "Terjadi kesalahan internal pada server.",
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 });
 
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => {
-  console.log(
-    `🚀 Server berjalan di mode ${process.env.NODE_ENV || "production"}`,
-  );
+const PORT = process.env.PORT || 8000; // Koyeb biasanya menyukai port 8000 atau 8080
+app.listen(PORT, "0.0.0.0", () => {
+  // "0.0.0.0" wajib agar bisa diakses dari luar Koyeb
+  console.log(`🚀 Server running on port ${PORT}`);
 });
