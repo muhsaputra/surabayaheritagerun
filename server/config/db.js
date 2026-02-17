@@ -1,9 +1,13 @@
-// db.js
 const mongoose = require("mongoose");
 
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+  throw new Error("Definisikan MONGO_URI di Environment Variables Vercel!");
+}
+
 /**
- * Global is used here to maintain a cached connection across hot reloads
- * in development and prevent multiple connections in serverless environments.
+ * Caching koneksi sangat krusial untuk Vercel agar limit 500 koneksi Atlas tidak jebol
  */
 let cached = global.mongoose;
 
@@ -11,40 +15,35 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
-const connectDB = async () => {
+async function connectDB() {
+  // Jika koneksi sudah ada, langsung return
   if (cached.conn) {
     return cached.conn;
   }
 
+  // Jika belum ada proses koneksi, buat promise baru
   if (!cached.promise) {
     const opts = {
-      bufferCommands: false,
-      // Opsi tambahan untuk kestabilan di trafik tinggi
-      maxPoolSize: 10, // Batasi koneksi per instance agar tidak membebani Atlas M0
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      bufferCommands: true, // Ubah ke TRUE agar Mongoose mengantri query sampai koneksi siap
+      maxPoolSize: 10, // Batasi agar efisien di serverless
     };
 
-    console.log("⏳ Menghubungkan ke MongoDB...");
-
-    cached.promise = mongoose
-      .connect(process.env.MONGO_URI, opts)
-      .then((mongoose) => {
-        console.log(`✅ MongoDB Terhubung: ${mongoose.connection.host}`);
-        return mongoose;
-      });
+    console.log("⏳ Menghubungkan ke MongoDB Atlas...");
+    cached.promise = mongoose.connect(MONGO_URI, opts).then((mongoose) => {
+      console.log("✅ MongoDB Terhubung");
+      return mongoose;
+    });
   }
 
   try {
     cached.conn = await cached.promise;
   } catch (e) {
-    cached.promise = null;
-    console.error(`❌ Gagal Konek: ${e.message}`);
-    // Jangan gunakan process.exit(1) di serverless, cukup lempar error
+    cached.promise = null; // Reset jika gagal agar bisa coba lagi
+    console.error("❌ Koneksi Gagal:", e.message);
     throw e;
   }
 
   return cached.conn;
-};
+}
 
 module.exports = connectDB;
