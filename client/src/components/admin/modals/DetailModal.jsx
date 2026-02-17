@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom"; // WAJIB TAMBAH INI
+import ReactDOM from "react-dom";
 import axios from "axios";
+import Swal from "sweetalert2"; // Import SweetAlert2
 import {
   X,
   User,
-  HeartPulse,
   BadgeCheck,
   CheckCircle,
   ImageIcon,
@@ -18,223 +18,223 @@ import {
   Shirt,
   Fingerprint,
   Maximize2,
+  AlertCircle,
 } from "lucide-react";
 import { getProofUrl } from "../utils/adminHelpers";
-import AlertModal from "../modals/AlertModal";
 
 const DetailModal = ({ participant, onClose, onRefresh }) => {
   const [showImageLightbox, setShowImageLightbox] = useState(false);
-  const [alertConfig, setAlertConfig] = useState({
-    isOpen: false,
-    type: "confirm",
-    title: "",
-    message: "",
-    onConfirm: null,
-    onCancel: null,
-  });
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const API_URL =
-    import.meta.env.VITE_API_URL ||
-    "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-  const closeAlert = () => setAlertConfig({ ...alertConfig, isOpen: false });
-  const showAlert = (config) => setAlertConfig({ ...config, isOpen: true });
-
-  const handleManualConfirm = (id, name) => {
-    showAlert({
-      type: "confirm",
+  // --- FUNGSI VERIFIKASI PEMBAYARAN ---
+  const handleVerifyPayment = async () => {
+    const result = await Swal.fire({
       title: "Verifikasi Pembayaran?",
-      message: `Konfirmasi pembayaran manual untuk ${name}? Nomor BIB akan dikirim ke email peserta.`,
-      onCancel: closeAlert,
-      confirmText: "Ya, Verifikasi",
-      onConfirm: async () => {
-        try {
-          const token = localStorage.getItem("adminToken");
-          await axios.post(
-            `${API_URL}/api/admin/confirm-payment`,
-            { id },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              withCredentials: true,
-            },
-          );
-          showAlert({
-            type: "success",
-            title: "Verifikasi Berhasil",
-            message: "Status pembayaran diperbarui dan tiket telah dikirim.",
-            confirmText: "Selesai",
-            onConfirm: () => {
-              if (onRefresh) onRefresh();
-              onClose();
-            },
-          });
-        } catch (e) {
-          showAlert({
-            type: "error",
-            title: "Gagal Verifikasi",
-            message: e.response?.data?.message || "Terjadi kesalahan server.",
-            confirmText: "Tutup",
-            onConfirm: closeAlert,
-          });
-        }
+      text: `Konfirmasi pembayaran manual untuk ${participant.fullName}? Nomor BIB akan digenerate otomatis.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#0f172a", // Slate 900
+      cancelButtonColor: "#ef4444", // Red 600
+      confirmButtonText: "Ya, Verifikasi Lunas",
+      cancelButtonText: "Batal",
+      border: "none",
+      customClass: {
+        popup: "rounded-[2rem]",
+        confirmButton:
+          "rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest",
+        cancelButton:
+          "rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest",
       },
     });
+
+    if (result.isConfirmed) {
+      setIsProcessing(true);
+      Swal.fire({
+        title: "Sedang Memproses...",
+        text: "Mengupdate database & mengirim email tiket",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      try {
+        const token = localStorage.getItem("adminToken");
+        const res = await axios.post(
+          `${API_URL}/api/admin/confirm-payment`,
+          { id: participant._id },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        if (res.data.success) {
+          await Swal.fire({
+            title: "Berhasil!",
+            text: `BIB #${res.data.bibNumber} telah terbit. Email tiket telah dikirim.`,
+            icon: "success",
+            confirmButtonColor: "#0f172a",
+            timer: 3000,
+          });
+          onRefresh();
+          onClose();
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "Gagal Verifikasi",
+          text:
+            error.response?.data?.message || "Terjadi kesalahan pada server.",
+          icon: "error",
+          confirmButtonColor: "#0f172a",
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    }
   };
 
-  const handleCheckIn = (id, name) => {
-    showAlert({
-      type: "confirm",
+  // --- FUNGSI CHECK-IN ---
+  const handleCheckIn = async () => {
+    const result = await Swal.fire({
       title: "Konfirmasi Kehadiran",
-      message: `Tandai ${name} sebagai hadir di lokasi acara?`,
-      onCancel: closeAlert,
-      confirmText: "Ya, Hadir",
-      onConfirm: async () => {
-        try {
-          const token = localStorage.getItem("adminToken");
-          await axios.post(
-            `${API_URL}/api/admin/checkin`,
-            { id },
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              withCredentials: true,
-            },
-          );
-          showAlert({
-            type: "success",
-            title: "Check-in Sukses",
-            message: "Kehadiran peserta berhasil dicatat.",
-            confirmText: "Siap",
-            onConfirm: () => {
-              if (onRefresh) onRefresh();
-              onClose();
-            },
-          });
-        } catch (e) {
-          showAlert({
-            type: "error",
-            title: "Gagal",
-            message: e.response?.data?.message || "Gagal melakukan check-in.",
-            confirmText: "Tutup",
-            onConfirm: closeAlert,
-          });
-        }
-      },
+      text: `Tandai ${participant.fullName} sebagai hadir di lokasi?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#10b981", // Emerald 500
+      confirmButtonText: "Ya, Hadir!",
+      customClass: { popup: "rounded-[2rem]" },
     });
+
+    if (result.isConfirmed) {
+      try {
+        const token = localStorage.getItem("adminToken");
+        await axios.post(
+          `${API_URL}/api/admin/checkin`,
+          { id: participant._id },
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        Swal.fire({
+          title: "Sukses!",
+          text: "Peserta berhasil Check-in.",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        onRefresh();
+        onClose();
+      } catch (error) {
+        Swal.fire("Error", "Gagal melakukan check-in", "error");
+      }
+    }
   };
 
   if (!participant) return null;
 
-  const DetailItem = ({ label, value, isAlert, icon: Icon, subValue }) => (
-    <div className="group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-white hover:shadow-md hover:border-red-100 h-full">
+  const DetailItem = ({ label, value, isAlert, icon: Icon }) => (
+    <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md transition-all">
       <div
-        className={`p-2 rounded-xl flex-shrink-0 ${isAlert ? "bg-red-50 text-red-600" : "bg-white text-slate-400 shadow-sm"}`}
+        className={`p-2 rounded-xl ${isAlert ? "bg-red-50 text-red-600" : "bg-white text-slate-400 shadow-sm border border-slate-50"}`}
       >
         <Icon size={16} />
       </div>
-      <div className="flex flex-col min-w-0 w-full">
+      <div className="flex flex-col min-w-0">
         <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">
           {label}
         </span>
         <span
-          className={`text-xs font-bold break-words leading-relaxed ${isAlert ? "text-red-600" : "text-slate-700"}`}
+          className={`text-xs font-bold break-words ${isAlert ? "text-red-600" : "text-slate-800"}`}
         >
           {value || "-"}
         </span>
-        {subValue && (
-          <span className="text-[9px] text-slate-400 mt-0.5 leading-tight">
-            {subValue}
-          </span>
-        )}
       </div>
     </div>
   );
 
-  // LOGIKA RENDER DENGAN PORTAL
   const modalContent = (
     <>
-      <AlertModal {...alertConfig} />
-
-      {/* POP-UP LIGHTBOX (FULL SCREEN) */}
+      {/* IMAGE LIGHTBOX */}
       {showImageLightbox && (
         <div
-          className="fixed top-0 left-0 w-screen h-screen z-[20000] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 transition-all"
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/95 backdrop-blur-xl p-4 cursor-zoom-out"
           onClick={() => setShowImageLightbox(false)}
         >
-          <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
-            <X size={40} />
-          </button>
           <img
             src={getProofUrl(participant.paymentProof)}
+            className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain animate-in zoom-in duration-300"
             alt="Bukti Transfer"
-            className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain animate-zoom-in"
-            onClick={(e) => e.stopPropagation()}
           />
+          <button className="absolute top-10 right-10 text-white/50 hover:text-white">
+            <X size={32} />
+          </button>
         </div>
       )}
 
-      {/* MODAL OVERLAY UTAMA */}
-      <div
-        className="fixed top-0 left-0 w-screen h-screen z-[19999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-6"
-        style={{ margin: 0 }} // Memastikan tidak ada margin yang bocor
-      >
-        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
-          {/* SIDEBAR */}
-          <div className="w-full md:w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto shrink-0">
-            <div className="flex justify-center mb-5">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-[1.8rem] bg-slate-900 text-white flex items-center justify-center font-serif text-3xl font-bold shadow-xl">
+      {/* MAIN MODAL */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
+          {/* SIDEBAR: PHOTO & PROOF */}
+          <div className="w-full md:w-[320px] bg-slate-50 border-r border-slate-100 p-8 flex flex-col overflow-y-auto no-scrollbar shrink-0">
+            <div className="flex justify-center mb-6">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center text-4xl font-black shadow-2xl transition-transform group-hover:scale-105">
                   {participant.fullName.charAt(0)}
                 </div>
                 <div
-                  className={`absolute -bottom-1 -right-1 p-1.5 rounded-lg ${participant.paymentStatus === "paid" ? "bg-green-500" : "bg-red-500"} text-white shadow-lg`}
+                  className={`absolute -bottom-2 -right-2 p-2 rounded-xl shadow-lg border-2 border-white ${participant.paymentStatus === "paid" ? "bg-emerald-500" : "bg-orange-500"} text-white`}
                 >
-                  <BadgeCheck size={16} />
+                  {participant.paymentStatus === "paid" ? (
+                    <BadgeCheck size={20} />
+                  ) : (
+                    <Clock size={20} />
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="text-center mb-6">
-              <h2 className="text-lg font-black text-slate-900 leading-tight mb-2 uppercase tracking-tight break-words">
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-black text-slate-900 leading-tight mb-2 uppercase tracking-tight">
                 {participant.fullName}
               </h2>
-              <div className="flex flex-wrap justify-center gap-1.5">
-                <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg uppercase tracking-widest">
-                  {participant.category}
-                </span>
-                <span
-                  className={`px-3 py-1 text-[8px] font-black rounded-lg uppercase tracking-widest ${participant.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
-                >
-                  {participant.paymentStatus === "paid" ? "LUNAS" : "PENDING"}
-                </span>
-              </div>
+              <span
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                  participant.paymentStatus === "paid"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-orange-100 text-orange-700"
+                }`}
+              >
+                {participant.paymentStatus === "paid"
+                  ? "Status: Lunas"
+                  : "Status: Pending"}
+              </span>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">
-                Bukti Transfer
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
+                Lampiran Bayar
               </h4>
               {participant.paymentProof ? (
                 <div
-                  className="group relative rounded-[1.2rem] overflow-hidden border-2 border-white shadow-md aspect-[4/5] bg-slate-200 cursor-pointer"
+                  className="group relative rounded-3xl overflow-hidden border-4 border-white shadow-xl cursor-pointer aspect-[3/4]"
                   onClick={() => setShowImageLightbox(true)}
                 >
                   <img
                     src={getProofUrl(participant.paymentProof)}
-                    alt="Transfer"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    alt="Bukti"
                   />
-                  <div className="absolute inset-0 bg-slate-900/40 flex flex-col items-center justify-center text-white gap-2 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
-                    <Maximize2 size={20} />
-                    <span className="text-[9px] font-black uppercase">
-                      Zoom Foto
+                  <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                    <Maximize2 size={24} className="mb-2" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      Klik Perbesar
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="h-40 rounded-[1.2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center p-4">
-                  <ImageIcon size={28} className="mb-1 opacity-20" />
-                  <p className="text-[8px] font-bold uppercase tracking-widest">
-                    No Proof
+                <div className="h-48 rounded-3xl border-4 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-300 bg-white">
+                  <ImageIcon size={40} className="mb-2 opacity-20" />
+                  <p className="text-[10px] font-black uppercase tracking-tighter">
+                    Tidak Ada Bukti
                   </p>
                 </div>
               )}
@@ -243,155 +243,156 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
 
           {/* MAIN CONTENT */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
-            <div className="flex justify-end p-4 border-b border-slate-50 bg-white">
+            <div className="flex justify-end p-6 border-b border-slate-50">
               <button
                 onClick={onClose}
-                className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-all"
+                className="p-2 text-slate-300 hover:text-slate-900 transition-colors"
               >
-                <X size={22} />
+                <X size={28} />
               </button>
             </div>
 
-            <div className="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
-              {/* Grid Info Personal */}
-              <div className="mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase mb-4">
-                  <User size={12} /> Data Peserta
+            <div className="p-8 overflow-y-auto flex-1 custom-scrollbar space-y-8">
+              {/* DATA SECTION */}
+              <section>
+                <div className="flex items-center gap-2 mb-6 text-slate-400">
+                  <User size={18} />
+                  <h3 className="text-xs font-black uppercase tracking-widest">
+                    Informasi Registrasi
+                  </h3>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <DetailItem
-                    label="NIK"
+                    label="NIK / KTP"
                     value={participant.nik}
                     icon={Fingerprint}
                   />
                   <DetailItem
-                    label="Email"
+                    label="Email Aktif"
                     value={participant.email}
                     icon={Mail}
                   />
                   <DetailItem
-                    label="WhatsApp"
-                    value={participant.phoneNumber || participant.whatsapp}
+                    label="Nomor WhatsApp"
+                    value={participant.phoneNumber}
                     icon={Phone}
                   />
                   <DetailItem
-                    label="BIB"
+                    label="BIB NUMBER"
                     value={
                       participant.bibNumber
                         ? `#${participant.bibNumber}`
-                        : "NOT VERIFIED"
+                        : "BELUM TERBIT"
                     }
                     icon={Tag}
                     isAlert={!!participant.bibNumber}
                   />
                   <DetailItem
-                    label="Jersey"
+                    label="UKURAN JERSEY"
                     value={participant.jerseySize}
                     icon={Shirt}
                   />
                   <DetailItem
-                    label="Domisili"
+                    label="KATEGORI LARI"
+                    value={`${participant.category} RUN`}
+                    icon={CalendarDays}
+                  />
+                  <DetailItem
+                    label="KOTA ASAL"
                     value={participant.city}
                     icon={MapPin}
                   />
                   <DetailItem
-                    label="Biaya"
+                    label="TOTAL BAYAR"
                     value={`Rp ${participant.pricePaid?.toLocaleString("id-ID")}`}
                     icon={Wallet}
                     isAlert
                   />
-                  <DetailItem
-                    label="Fase"
-                    value={participant.registrationPhase || "Regular"}
-                    icon={CalendarDays}
-                  />
                 </div>
-              </div>
+              </section>
 
-              {/* Grid Medis & Emergency */}
-              <div className="grid lg:grid-cols-2 gap-4 mb-4">
-                <div className="p-6 bg-slate-900 rounded-[1.5rem] text-white relative overflow-hidden shadow-xl border border-slate-800">
+              {/* MEDICAL & EMERGENCY */}
+              <div className="grid lg:grid-cols-2 gap-6">
+                <div className="p-6 bg-red-50 rounded-[2rem] border border-red-100 shadow-sm relative overflow-hidden group">
                   <ShieldAlert
-                    size={80}
-                    className="absolute -right-6 -bottom-6 opacity-5 text-red-500"
+                    size={100}
+                    className="absolute -right-8 -bottom-8 opacity-[0.03] text-red-600 group-hover:scale-110 transition-transform"
                   />
-                  <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-500 flex items-center gap-2">
-                    Medical
-                  </h4>
-                  <p className="text-xs font-bold leading-relaxed mb-3 break-words whitespace-normal">
-                    {participant.medicalHistory || "TIDAK ADA RIWAYAT"}
+                  <div className="flex items-center gap-2 mb-4 text-red-600">
+                    <AlertCircle size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">
+                      Riwayat Medis
+                    </h4>
+                  </div>
+                  <p className="text-xs font-bold text-slate-700 leading-relaxed mb-4">
+                    {participant.medicalHistory || "TIDAK ADA RIWAYAT PENYAKIT"}
                   </p>
-                  <span className="text-[9px] bg-white/10 px-2 py-1 rounded text-red-400 font-bold border border-white/10">
-                    Gol: {participant.bloodType || "-"}
+                  <span className="inline-block px-3 py-1 bg-white text-red-600 rounded-lg text-[10px] font-black border border-red-200">
+                    GOL DARAH: {participant.bloodType || "N/A"}
                   </span>
                 </div>
 
-                <div className="p-6 bg-red-50 rounded-[1.5rem] border border-red-100 shadow-sm">
-                  <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-600 flex items-center gap-2">
-                    Emergency
-                  </h4>
-                  <p className="text-sm font-black text-slate-900 break-words">
+                <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4 text-slate-500">
+                    <Phone size={18} />
+                    <h4 className="text-[10px] font-black uppercase tracking-widest">
+                      Kontak Darurat
+                    </h4>
+                  </div>
+                  <p className="text-sm font-black text-slate-900 mb-1">
                     {participant.emergencyContact?.name || "-"}
                   </p>
-                  <p className="text-xs font-bold text-red-600 mb-1">
+                  <p className="text-xs font-bold text-red-600 mb-2">
                     {participant.emergencyContact?.phone || "-"}
                   </p>
-                  <p className="text-[9px] text-slate-400 uppercase tracking-widest">
-                    {participant.emergencyContact?.relation || "-"}
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest italic">
+                    Hubungan: {participant.emergencyContact?.relation || "-"}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* ACTION BAR */}
-            <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+            {/* ACTION FOOTER */}
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-4">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+                className="px-6 py-3 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors"
               >
-                Kembali
+                Tutup
               </button>
-              {participant.paymentStatus !== "paid" && (
+
+              {participant.paymentStatus !== "paid" ? (
                 <button
-                  onClick={() =>
-                    handleManualConfirm(participant._id, participant.fullName)
-                  }
-                  className="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black shadow-lg shadow-red-200 hover:bg-red-700 transition-all flex items-center gap-2"
+                  onClick={handleVerifyPayment}
+                  disabled={isProcessing}
+                  className="px-8 py-4 bg-red-600 text-white rounded-2xl text-xs font-black shadow-xl shadow-red-200 hover:bg-red-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
                 >
-                  <BadgeCheck size={16} /> VERIFIKASI
+                  <BadgeCheck size={18} /> VERIFIKASI LUNAS
                 </button>
-              )}
-              {participant.paymentStatus === "paid" &&
-                !participant.isCheckedIn && (
-                  <button
-                    onClick={() =>
-                      handleCheckIn(participant._id, participant.fullName)
-                    }
-                    className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black shadow-lg shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
-                  >
-                    <CheckCircle size={16} /> KONFIRMASI HADIR
-                  </button>
-                )}
-              {participant.isCheckedIn && (
-                <div className="px-6 py-3 bg-green-100 text-green-700 rounded-xl text-xs font-black border border-green-200 flex items-center gap-2">
-                  <CheckCircle size={16} /> SUDAH HADIR
+              ) : !participant.isCheckedIn ? (
+                <button
+                  onClick={handleCheckIn}
+                  className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black shadow-xl shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
+                >
+                  <CheckCircle size={18} /> KONFIRMASI HADIR
+                </button>
+              ) : (
+                <div className="px-8 py-4 bg-emerald-50 text-emerald-700 rounded-2xl text-xs font-black border border-emerald-100 flex items-center gap-2 italic">
+                  <CheckCircle size={18} /> TERVERIFIKASI HADIR
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
-
       <style>{`
-        @keyframes zoom-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .animate-zoom-in { animation: zoom-in 0.2s ease-out forwards; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </>
   );
 
-  // MENGGUNAKAN CREATEPORTAL UNTUK PINDAHKAN MODAL KE DOCUMENT BODY
   return ReactDOM.createPortal(modalContent, document.body);
 };
 
