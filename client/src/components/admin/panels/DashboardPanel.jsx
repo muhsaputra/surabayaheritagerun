@@ -16,7 +16,7 @@ import {
   Filter,
 } from "lucide-react";
 import DetailModal from "../modals/DetailModal";
-import DashboardCharts from "./DashboardCharts"; // Pastikan file ini sudah dibuat
+import DashboardCharts from "./DashboardCharts"; // Pastikan file ini tersedia di folder yang sama
 
 const formatRupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -56,13 +56,17 @@ const DashboardPanel = () => {
       if (res.data.success) {
         const data = res.data.data;
         setParticipants(data);
+
+        // Hitung Statistik
         const totalRevenue = data
           .filter((p) => p.paymentStatus === "paid")
           .reduce((acc, curr) => acc + (curr.pricePaid || 0), 0);
+
         const todayCount = data.filter(
           (p) =>
             new Date(p.createdAt).toDateString() === new Date().toDateString(),
         ).length;
+
         setStats({
           total: data.length,
           checkIn: data.filter((p) => p.isCheckedIn).length,
@@ -137,14 +141,6 @@ const DashboardPanel = () => {
     return matchSearch && matchFilter;
   });
 
-  const getPhaseBadgeColor = (phase) => {
-    const p = (phase || "").toLowerCase();
-    if (p.includes("presale"))
-      return "bg-purple-100 text-purple-700 border-purple-200";
-    if (p.includes("early")) return "bg-blue-100 text-blue-700 border-blue-200";
-    return "bg-slate-100 text-slate-600 border-slate-200";
-  };
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
       {/* HEADER SECTION */}
@@ -160,7 +156,7 @@ const DashboardPanel = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={fetchData}
-            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 font-black text-xs hover:bg-slate-50 transition-all shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 font-black text-xs hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
           >
             <RefreshCcw size={16} className={loading ? "animate-spin" : ""} />
             REFRESH DATA
@@ -191,7 +187,7 @@ const DashboardPanel = () => {
             bg: "bg-blue-50",
           },
           {
-            label: "Check-in",
+            label: "Sudah Check-in",
             value: stats.checkIn,
             icon: CheckCircle,
             color: "text-emerald-600",
@@ -201,7 +197,7 @@ const DashboardPanel = () => {
             label: "Pendapatan",
             value: formatRupiah(stats.revenue),
             icon: CreditCard,
-            color: "text-slate-900",
+            color: "text-slate-800",
             bg: "bg-slate-100",
             isMoney: true,
           },
@@ -236,8 +232,13 @@ const DashboardPanel = () => {
         ))}
       </div>
 
-      {/* DASHBOARD CHARTS SECTION */}
-      {!loading && <DashboardCharts participants={participants} />}
+      {/* --- DASHBOARD CHARTS SECTION --- */}
+      {/* Menampilkan grafik hanya jika data sudah berhasil dimuat */}
+      {!loading && (
+        <div className="animate-in fade-in duration-1000">
+          <DashboardCharts participants={participants} />
+        </div>
+      )}
 
       {/* FILTER & SEARCH BOX */}
       <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
@@ -323,7 +324,7 @@ const DashboardPanel = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
                   <td colSpan="6" className="py-20 text-center">
@@ -369,7 +370,7 @@ const DashboardPanel = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-8 py-6 text-center">
                       <div className="flex flex-col items-center gap-1">
                         <span
                           className={`px-3 py-1 rounded-lg text-[9px] font-black border ${
