@@ -13,11 +13,10 @@ import {
   Eye,
   FileDown,
   Loader2,
-  TrendingUp,
   Filter,
-  ArrowUpRight,
 } from "lucide-react";
 import DetailModal from "../modals/DetailModal";
+import DashboardCharts from "./DashboardCharts"; // Pastikan file ini sudah dibuat
 
 const formatRupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -138,6 +137,14 @@ const DashboardPanel = () => {
     return matchSearch && matchFilter;
   });
 
+  const getPhaseBadgeColor = (phase) => {
+    const p = (phase || "").toLowerCase();
+    if (p.includes("presale"))
+      return "bg-purple-100 text-purple-700 border-purple-200";
+    if (p.includes("early")) return "bg-blue-100 text-blue-700 border-blue-200";
+    return "bg-slate-100 text-slate-600 border-slate-200";
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
       {/* HEADER SECTION */}
@@ -146,29 +153,29 @@ const DashboardPanel = () => {
           <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
             Dashboard Overview
           </h2>
-          <p className="text-slate-500 font-medium">
-            Manajemen data peserta Surabaya Heritage Run 2026
+          <p className="text-slate-500 font-medium italic">
+            Data Real-time Surabaya Heritage Run 2026
           </p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={fetchData}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-2xl text-slate-600 font-black text-xs hover:bg-slate-50 transition-all shadow-sm"
           >
             <RefreshCcw size={16} className={loading ? "animate-spin" : ""} />
-            Refresh
+            REFRESH DATA
           </button>
           <button
             onClick={handleExportExcel}
             disabled={isExporting}
-            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200 disabled:opacity-50 active:scale-95"
+            className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-2xl text-xs font-black hover:bg-black transition-all shadow-xl shadow-slate-200 disabled:opacity-50"
           >
             {isExporting ? (
-              <Loader2 size={18} className="animate-spin" />
+              <Loader2 size={16} className="animate-spin" />
             ) : (
-              <FileDown size={18} />
+              <FileDown size={16} />
             )}
-            {isExporting ? "Mengekspor..." : "Export Database"}
+            {isExporting ? "EXPORTING..." : "DOWNLOAD EXCEL"}
           </button>
         </div>
       </div>
@@ -182,7 +189,6 @@ const DashboardPanel = () => {
             icon: Users,
             color: "text-blue-600",
             bg: "bg-blue-50",
-            trend: "+12%",
           },
           {
             label: "Check-in",
@@ -190,7 +196,6 @@ const DashboardPanel = () => {
             icon: CheckCircle,
             color: "text-emerald-600",
             bg: "bg-emerald-50",
-            trend: "Live",
           },
           {
             label: "Pendapatan",
@@ -201,32 +206,19 @@ const DashboardPanel = () => {
             isMoney: true,
           },
           {
-            label: "Pendaftar Hari Ini",
+            label: "Daftar Hari Ini",
             value: stats.today,
             icon: CalendarClock,
             color: "text-red-600",
             bg: "bg-red-50",
-            trend: "New",
           },
         ].map((stat, idx) => (
           <div
             key={idx}
-            className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
+            className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-xl transition-all duration-300"
           >
-            <div className="flex justify-between items-start mb-4">
-              <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}
-              >
-                <stat.icon size={22} />
-              </div>
-              <span
-                className={`text-[10px] font-black px-2 py-1 rounded-lg ${stat.color} ${stat.bg}`}
-              >
-                {stat.trend}
-              </span>
-            </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                 {stat.label}
               </p>
               <h3
@@ -235,12 +227,20 @@ const DashboardPanel = () => {
                 {stat.value}
               </h3>
             </div>
+            <div
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}
+            >
+              <stat.icon size={24} />
+            </div>
           </div>
         ))}
       </div>
 
+      {/* DASHBOARD CHARTS SECTION */}
+      {!loading && <DashboardCharts participants={participants} />}
+
       {/* FILTER & SEARCH BOX */}
-      <div className="bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+      <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
         <div className="flex flex-col lg:flex-row justify-between gap-4">
           <div className="relative flex-1">
             <Search
@@ -249,18 +249,15 @@ const DashboardPanel = () => {
             />
             <input
               type="text"
-              placeholder="Cari nama, email, atau NIK peserta..."
+              placeholder="Cari nama, email, atau NIK..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-slate-900/5 transition-all outline-none placeholder:text-slate-400"
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-slate-900/5 transition-all outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl border border-slate-100">
               <Filter size={16} className="text-slate-400" />
-              <span className="text-[10px] font-black text-slate-400 uppercase mr-2">
-                Filter:
-              </span>
               <div className="flex gap-1">
                 {["Semua", "Lunas", "Belum Bayar", "Hadir"].map((f) => (
                   <button
@@ -268,8 +265,8 @@ const DashboardPanel = () => {
                     onClick={() => setActiveFilter(f)}
                     className={`px-4 py-1.5 rounded-xl text-[10px] font-black transition-all ${
                       activeFilter === f
-                        ? "bg-slate-900 text-white shadow-md"
-                        : "hover:bg-slate-200 text-slate-500"
+                        ? "bg-slate-900 text-white shadow-lg"
+                        : "text-slate-500 hover:bg-slate-200"
                     }`}
                   >
                     {f.toUpperCase()}
@@ -287,13 +284,13 @@ const DashboardPanel = () => {
               <button
                 key={chip}
                 onClick={() => setActiveFilter(chip)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${
+                className={`px-5 py-2.5 rounded-2xl text-[10px] font-black border transition-all ${
                   activeFilter === chip
-                    ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-200"
+                    ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-100"
                     : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
                 }`}
               >
-                {chip}
+                {chip.toUpperCase()}
               </button>
             ),
           )}
@@ -301,28 +298,28 @@ const DashboardPanel = () => {
       </div>
 
       {/* DATA TABLE */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-white">
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-center">
                   No
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
-                  Peserta
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">
+                  Identitas Peserta
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-center">
-                  Info Registrasi
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-center">
+                  Detail Lari
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
-                  Status Pembayaran
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest">
+                  Pembayaran
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-center">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-center">
                   Kehadiran
                 </th>
-                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-right">
-                  Detail
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-right">
+                  Aksi
                 </th>
               </tr>
             </thead>
@@ -334,8 +331,8 @@ const DashboardPanel = () => {
                       className="animate-spin mx-auto text-slate-200"
                       size={40}
                     />
-                    <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      Sinkronisasi Server...
+                    <p className="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Memuat Data...
                     </p>
                   </td>
                 </tr>
@@ -343,9 +340,9 @@ const DashboardPanel = () => {
                 <tr>
                   <td
                     colSpan="6"
-                    className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest"
+                    className="py-20 text-center text-slate-400 font-black uppercase tracking-widest"
                   >
-                    Data tidak ditemukan
+                    Data Kosong
                   </td>
                 </tr>
               ) : (
@@ -354,19 +351,19 @@ const DashboardPanel = () => {
                     key={p._id}
                     className="hover:bg-slate-50/80 transition-all group"
                   >
-                    <td className="px-8 py-6 text-xs font-bold text-slate-300 group-hover:text-slate-900 transition-colors">
+                    <td className="px-8 py-6 text-xs font-bold text-slate-300 group-hover:text-slate-900 text-center">
                       {String(idx + 1).padStart(2, "0")}
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shadow-lg">
                           {p.fullName.charAt(0)}
                         </div>
                         <div className="flex flex-col">
                           <span className="font-black text-slate-900 text-sm tracking-tight">
                             {p.fullName}
                           </span>
-                          <span className="text-[10px] font-medium text-slate-400 font-mono tracking-tighter">
+                          <span className="text-[10px] font-bold text-slate-400 font-mono italic">
                             {p.email}
                           </span>
                         </div>
@@ -375,16 +372,16 @@ const DashboardPanel = () => {
                     <td className="px-8 py-6">
                       <div className="flex flex-col items-center gap-1">
                         <span
-                          className={`px-2 py-1 rounded-lg text-[9px] font-black border ${
+                          className={`px-3 py-1 rounded-lg text-[9px] font-black border ${
                             p.category === "5K"
                               ? "bg-red-50 text-red-600 border-red-100"
-                              : "bg-slate-100 text-slate-700 border-slate-200"
+                              : "bg-slate-900 text-white border-slate-900"
                           }`}
                         >
-                          {p.category} | {p.jerseySize}
+                          {p.category} RUN
                         </span>
-                        <span className="text-[10px] font-bold text-slate-400 italic">
-                          #{p.bibNumber || "N/A"}
+                        <span className="text-[9px] font-black text-slate-400 uppercase">
+                          {p.jerseySize} | {p.registrationPhase}
                         </span>
                       </div>
                     </td>
@@ -409,11 +406,11 @@ const DashboardPanel = () => {
                     </td>
                     <td className="px-8 py-6 text-center">
                       {p.isCheckedIn ? (
-                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-100">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-emerald-50 text-emerald-700 text-[9px] font-black border border-emerald-100">
                           <CheckCircle size={14} /> HADIR
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-50 text-slate-300 text-[10px] font-black border border-slate-100 opacity-60">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-slate-50 text-slate-300 text-[9px] font-black border border-slate-100 opacity-60">
                           <XCircle size={14} /> ABSEN
                         </span>
                       )}
@@ -424,7 +421,7 @@ const DashboardPanel = () => {
                           setSelectedParticipant(p);
                           setShowDetailModal(true);
                         }}
-                        className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white hover:rotate-12 transition-all shadow-sm active:scale-90"
+                        className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-sm active:scale-90"
                       >
                         <Eye size={18} />
                       </button>
@@ -434,20 +431,6 @@ const DashboardPanel = () => {
               )}
             </tbody>
           </table>
-        </div>
-
-        {/* TABLE FOOTER */}
-        <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-            Surabaya Heritage Run 2026 Database
-          </p>
-          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
-            <Users size={12} />
-            <span>
-              Menampilkan {filteredParticipants.length} dari{" "}
-              {participants.length} Peserta
-            </span>
-          </div>
         </div>
       </div>
 
