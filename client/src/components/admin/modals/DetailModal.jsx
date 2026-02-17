@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom"; // WAJIB TAMBAH INI
 import axios from "axios";
 import {
   X,
@@ -148,14 +149,15 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     </div>
   );
 
-  return (
+  // LOGIKA RENDER DENGAN PORTAL
+  const modalContent = (
     <>
       <AlertModal {...alertConfig} />
 
-      {/* LIGHTBOX POPUP BUKTI BAYAR (Z-10001) */}
+      {/* POP-UP LIGHTBOX (FULL SCREEN) */}
       {showImageLightbox && (
         <div
-          className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[10001] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 animate-fade-in"
+          className="fixed top-0 left-0 w-screen h-screen z-[20000] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 transition-all"
           onClick={() => setShowImageLightbox(false)}
         >
           <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
@@ -163,18 +165,19 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           </button>
           <img
             src={getProofUrl(participant.paymentProof)}
-            alt="Bukti"
-            className="max-w-full max-h-[85vh] rounded-lg shadow-2xl animate-zoom-in object-contain"
+            alt="Bukti Transfer"
+            className="max-w-full max-h-[85vh] rounded-xl shadow-2xl object-contain animate-zoom-in"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
 
-      {/* OVERLAY MODAL UTAMA (Z-9999) */}
-      {/* Perbaikan: Menggunakan w-screen h-screen dan top-0 left-0 untuk paksa full layar */}
-      <div className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-8">
-        {/* CONTAINER MODAL (Dikecilkan ukurannya agar lebih compact) */}
-        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
+      {/* MODAL OVERLAY UTAMA */}
+      <div
+        className="fixed top-0 left-0 w-screen h-screen z-[19999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-6"
+        style={{ margin: 0 }} // Memastikan tidak ada margin yang bocor
+      >
+        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
           {/* SIDEBAR */}
           <div className="w-full md:w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-5">
@@ -220,7 +223,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                     alt="Transfer"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-2 backdrop-blur-[2px]">
+                  <div className="absolute inset-0 bg-slate-900/40 flex flex-col items-center justify-center text-white gap-2 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px]">
                     <Maximize2 size={20} />
                     <span className="text-[9px] font-black uppercase">
                       Zoom Foto
@@ -228,7 +231,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   </div>
                 </div>
               ) : (
-                <div className="h-40 rounded-[1.2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center p-4 bg-white/50">
+                <div className="h-40 rounded-[1.2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center p-4">
                   <ImageIcon size={28} className="mb-1 opacity-20" />
                   <p className="text-[8px] font-bold uppercase tracking-widest">
                     No Proof
@@ -240,7 +243,6 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
 
           {/* MAIN CONTENT */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
-            {/* Header internal dengan tombol close */}
             <div className="flex justify-end p-4 border-b border-slate-50 bg-white">
               <button
                 onClick={onClose}
@@ -251,9 +253,10 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             </div>
 
             <div className="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
+              {/* Grid Info Personal */}
               <div className="mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] mb-4">
-                  <User size={12} /> Data Personal
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase mb-4">
+                  <User size={12} /> Data Peserta
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <DetailItem
@@ -305,17 +308,18 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 </div>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-4">
+              {/* Grid Medis & Emergency */}
+              <div className="grid lg:grid-cols-2 gap-4 mb-4">
                 <div className="p-6 bg-slate-900 rounded-[1.5rem] text-white relative overflow-hidden shadow-xl border border-slate-800">
                   <ShieldAlert
                     size={80}
                     className="absolute -right-6 -bottom-6 opacity-5 text-red-500"
                   />
                   <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-500 flex items-center gap-2">
-                    <HeartPulse size={14} /> Medical
+                    Medical
                   </h4>
-                  <p className="text-xs font-bold leading-relaxed mb-3 break-words">
-                    {participant.medicalHistory || "TIDAK ADA"}
+                  <p className="text-xs font-bold leading-relaxed mb-3 break-words whitespace-normal">
+                    {participant.medicalHistory || "TIDAK ADA RIWAYAT"}
                   </p>
                   <span className="text-[9px] bg-white/10 px-2 py-1 rounded text-red-400 font-bold border border-white/10">
                     Gol: {participant.bloodType || "-"}
@@ -324,7 +328,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
 
                 <div className="p-6 bg-red-50 rounded-[1.5rem] border border-red-100 shadow-sm">
                   <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-600 flex items-center gap-2">
-                    <Phone size={14} /> Emergency
+                    Emergency
                   </h4>
                   <p className="text-sm font-black text-slate-900 break-words">
                     {participant.emergencyContact?.name || "-"}
@@ -332,7 +336,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   <p className="text-xs font-bold text-red-600 mb-1">
                     {participant.emergencyContact?.phone || "-"}
                   </p>
-                  <p className="text-[9px] text-slate-400 uppercase">
+                  <p className="text-[9px] text-slate-400 uppercase tracking-widest">
                     {participant.emergencyContact?.relation || "-"}
                   </p>
                 </div>
@@ -343,7 +347,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900"
+                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
               >
                 Kembali
               </button>
@@ -354,7 +358,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   }
                   className="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black shadow-lg shadow-red-200 hover:bg-red-700 transition-all flex items-center gap-2"
                 >
-                  <BadgeCheck size={16} /> VERIFIKASI LUNAS
+                  <BadgeCheck size={16} /> VERIFIKASI
                 </button>
               )}
               {participant.paymentStatus === "paid" &&
@@ -386,6 +390,9 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
       `}</style>
     </>
   );
+
+  // MENGGUNAKAN CREATEPORTAL UNTUK PINDAHKAN MODAL KE DOCUMENT BODY
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default DetailModal;
