@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
-// PENYESUAIAN 1: Path naik satu tingkat (../) karena file ini sekarang di dalam /api
+// Path tetap naik satu tingkat karena file ini di dalam /api
 const connectDB = require("../config/db");
 const path = require("path");
 
@@ -16,7 +16,7 @@ const app = express();
 connectDB();
 
 // ==========================================
-// 1. RATE LIMITER (KEAMANAN NANO INSTANCE & VERCEL)
+// 1. RATE LIMITER (KEAMANAN)
 // ==========================================
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -31,7 +31,7 @@ const generalLimiter = rateLimit({
 
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 25,
+  max: 35, // Dinaikkan sedikit untuk antisipasi pendaftar bersamaan
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -48,12 +48,14 @@ const allowedOrigins = [
   "https://surabayaheritagerun.vercel.app",
   "https://surabayaheritagerun.com",
   "https://www.surabayaheritagerun.com",
+  "https://api.surabayaheritagerun.com", // UPDATE: Domain API baru diizinkan
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Izinkan request tanpa origin (seperti aplikasi mobile atau curl) atau yang ada di list
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -78,9 +80,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// PENYESUAIAN 2: Folder static di Serverless
-// Catatan: Vercel tidak bisa menyimpan file permanen di folder /uploads.
-// Pastikan upload Anda menggunakan Cloudinary.
+// Folder static (Hanya untuk akses file yang sudah ada, bukan untuk simpan baru di Vercel)
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ==========================================
@@ -90,26 +90,38 @@ app.use("/api/register", registerLimiter);
 app.use("/api/admin", adminRoutes);
 app.use("/api", apiRoutes);
 
+// Route Utama / Health Check
 app.get("/", (req, res) => {
-  res.send("API Surabaya Heritage Run 2026 - Online & Scalable on Vercel 🏃💨");
+  res
+    .status(200)
+    .send("API Surabaya Heritage Run 2026 - Online & Scalable on Vercel 🏃💨");
+});
+
+// Handling 404
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: "Route tidak ditemukan." });
 });
 
 // ==========================================
 // 4. ERROR HANDLING
 // ==========================================
 app.use((err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  console.error("❌ Global Error:", err.stack);
+  const statusCode = err.status || 500;
   res.status(statusCode).json({
     success: false,
     message: err.message || "Terjadi kesalahan internal pada server.",
   });
 });
 
-// PENYESUAIAN 3: Kondisi untuk Local vs Vercel
+// ==========================================
+// 5. EXPORT / LISTEN
+// ==========================================
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 8000;
   app.listen(PORT, () => {
     console.log(`🚀 Local Server running on port ${PORT}`);
+    console.log(`🔗 Allowed Origins: ${allowedOrigins.join(", ")}`);
   });
 }
 
