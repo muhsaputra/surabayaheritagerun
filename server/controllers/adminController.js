@@ -74,11 +74,10 @@ exports.exportExcel = async (req, res) => {
     const participants = await Participant.find().sort({ createdAt: -1 });
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Database Peserta", {
-      views: [{ showGridLines: false }], // UX: Menghilangkan garis kotak-kotak Excel agar seperti Web
+      views: [{ showGridLines: false }],
     });
 
-    // --- 1. SETUP KOLOM (Mulai dari B untuk efek padding/margin) ---
-    // Kolom A dikosongkan untuk margin kiri
+    // --- 1. SETUP KOLOM (Struktur Rapih) ---
     worksheet.columns = [
       { header: "", key: "margin", width: 4 },
       { header: "BIB", key: "bibNumber", width: 12 },
@@ -87,23 +86,21 @@ exports.exportExcel = async (req, res) => {
       { header: "SIZE", key: "jerseySize", width: 10 },
       { header: "WHATSAPP", key: "whatsapp", width: 22 },
       { header: "GOL. DARAH", key: "bloodType", width: 15 },
-      { header: "KONTAK DARURAT", key: "emergencyContact", width: 25 },
+      { header: "KONTAK DARURAT (NAMA)", key: "emergencyName", width: 25 },
+      { header: "KONTAK DARURAT (TELP)", key: "emergencyPhone", width: 22 },
       { header: "STATUS", key: "paymentStatus", width: 18 },
       { header: "FASE", key: "registrationPhase", width: 18 },
       { header: "TANGGAL DAFTAR", key: "createdAt", width: 22 },
     ];
 
-    // --- 2. HEADER BRANDING (Web Style Banner) ---
-    const headerColor = "FFDC2626"; // Merah Heritage
-    const darkColor = "FF0F172A"; // Biru Tua Dash
-
-    worksheet.mergeCells("B2:K2");
-    const banner = worksheet.getCell("B2");
+    // --- 2. BANNER BRANDING (Baris 1) ---
+    worksheet.mergeCells("B1:L1");
+    const banner = worksheet.getCell("B1");
     banner.value = "SURABAYA HERITAGE RUN 2026 - INTERNAL DATABASE";
     banner.fill = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: headerColor },
+      fgColor: { argb: "FFDC2626" },
     };
     banner.font = {
       name: "Segoe UI",
@@ -112,14 +109,14 @@ exports.exportExcel = async (req, res) => {
       color: { argb: "FFFFFFFF" },
     };
     banner.alignment = { vertical: "middle", horizontal: "center" };
-    worksheet.getRow(2).height = 40;
+    worksheet.getRow(1).height = 45;
 
-    // --- 3. TABLE HEADER (Modern Dark) ---
-    const headerRow = worksheet.getRow(4);
+    // --- 3. TABLE HEADER (Baris 3) ---
+    const headerRow = worksheet.getRow(3);
     headerRow.height = 30;
 
-    // Looping untuk style header kolom B sampai K
-    for (let i = 2; i <= 11; i++) {
+    const darkColor = "FF0F172A";
+    for (let i = 2; i <= 12; i++) {
       const cell = headerRow.getCell(i);
       cell.fill = {
         type: "pattern",
@@ -133,41 +130,50 @@ exports.exportExcel = async (req, res) => {
         color: { argb: "FFFFFFFF" },
       };
       cell.alignment = { vertical: "middle", horizontal: "center" };
-      // Border bawah merah tipis sebagai aksen
       cell.border = {
-        bottom: { style: "medium", color: { argb: headerColor } },
+        bottom: { style: "medium", color: { argb: "FFDC2626" } },
       };
     }
 
-    // --- 4. INSERT DATA & STYLING ---
+    // --- 4. INSERT DATA & FIXING OBJECTS ---
     participants.forEach((p, index) => {
-      const rowIndex = index + 5;
+      const rowIndex = index + 4; // Data mulai dari baris 4
       const row = worksheet.getRow(rowIndex);
       row.height = 25;
 
+      // Parsing Emergency Contact
+      let eName = "-";
+      let ePhone = "-";
+
+      if (p.emergencyContact) {
+        // Jika data berupa object, kita ambil isinya. Jika string, tampilkan apa adanya.
+        eName = p.emergencyContact.name || p.emergencyContact;
+        ePhone = p.emergencyContact.phone || "-";
+      }
+
       const rowData = {
         bibNumber: p.bibNumber || "-",
-        fullName: p.fullName.toUpperCase(),
-        category: p.category,
-        jerseySize: p.jerseySize,
-        whatsapp: p.whatsapp,
+        fullName: p.fullName ? p.fullName.toUpperCase() : "-",
+        category: p.category || "-",
+        jerseySize: p.jerseySize || "-",
+        whatsapp: p.whatsapp || "-",
         bloodType: p.bloodType || "-",
-        emergencyContact: p.emergencyContact || "-",
+        emergencyName: eName,
+        emergencyPhone: ePhone,
         paymentStatus: p.paymentStatus === "paid" ? "PAID" : "PENDING",
         registrationPhase: p.registrationPhase || "Regular",
         createdAt: new Date(p.createdAt).toLocaleDateString("id-ID"),
       };
 
-      // Isi data mulai dari kolom B
       Object.keys(rowData).forEach((key, colIndex) => {
         const cell = row.getCell(colIndex + 2);
         cell.value = rowData[key];
 
-        // Base Style
+        // UX: Text Styling
         cell.font = { name: "Segoe UI", size: 10, color: { argb: "FF334155" } };
         cell.alignment = { vertical: "middle", horizontal: "center" };
 
-        // Zebra Striping (Soft Slate)
+        // Zebra Striping
         if (index % 2 === 0) {
           cell.fill = {
             type: "pattern",
@@ -176,51 +182,37 @@ exports.exportExcel = async (req, res) => {
           };
         }
 
-        // --- UX: Custom Styling per Data ---
-        // BIB dikasih warna merah tebal
-        if (key === "bibNumber") {
-          cell.font = { bold: true, color: { argb: headerColor } };
+        // Highlight BIB & Status
+        if (key === "bibNumber")
+          cell.font = { bold: true, color: { argb: "FFDC2626" } };
+        if (key === "paymentStatus") {
+          cell.font = {
+            bold: true,
+            color: {
+              argb: p.paymentStatus === "paid" ? "FF16A34A" : "FFEA580C",
+            },
+          };
         }
 
-        // Status "Pill" Effect
-        if (key === "paymentStatus") {
-          if (p.paymentStatus === "paid") {
-            cell.font = { bold: true, color: { argb: "FF16A34A" } }; // Hijau
-          } else {
-            cell.font = { bold: true, color: { argb: "FFEA580C" } }; // Oranye
-          }
+        // Penting: Pastikan nomor telepon dianggap text agar tidak error di Excel
+        if (key === "whatsapp" || key === "emergencyPhone") {
+          cell.numFmt = "@";
         }
       });
     });
 
-    // --- 5. BORDER OUTER (Membuat efek kartu/box) ---
-    // Menambahkan garis halus di sisi-sisi data
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber >= 4) {
-        row.getCell(2).border = {
-          ...row.getCell(2).border,
-          left: { style: "thin", color: { argb: "FFCBD5E1" } },
-        };
-        row.getCell(11).border = {
-          ...row.getCell(11).border,
-          right: { style: "thin", color: { argb: "FFCBD5E1" } },
-        };
-      }
-    });
-
-    // Freeze Pane agar header tetap di tempat
+    // Freeze Pane di bawah header
     worksheet.views = [
-      { state: "frozen", xSplit: 0, ySplit: 4, activeCell: "B5" },
+      { state: "frozen", xSplit: 0, ySplit: 3, activeCell: "B4" },
     ];
 
-    // --- 6. EXPORT ---
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=SHR2026_Premium_Report.xlsx",
+      "attachment; filename=SHR2026_Internal_Report.xlsx",
     );
 
     await workbook.xlsx.write(res);
