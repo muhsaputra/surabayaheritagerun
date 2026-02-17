@@ -209,7 +209,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
               </button>
 
               {/* TOMBOL EXCEL MODERN */}
-              <button
+              {/* <button
                 onClick={onExport}
                 disabled={isExporting}
                 className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
@@ -220,7 +220,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                   <FileDown size={16} />
                 )}
                 {isExporting ? "Memproses..." : "Export Excel"}
-              </button>
+              </button> */}
             </div>
           </div>
 
