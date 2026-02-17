@@ -366,7 +366,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   onClick={handleCheckIn}
                   className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black shadow-xl shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
                 >
-                  <CheckCircle size={18} /> KONFIRMASI HADIR
+                  <CheckCircle size={18} /> KONFIRMASI HADIRR
                 </button>
               ) : (
                 <div className="px-8 py-4 bg-emerald-50 text-emerald-700 rounded-2xl text-xs font-black border border-emerald-100 flex items-center gap-2 italic">
