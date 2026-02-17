@@ -255,7 +255,7 @@ const DashboardPanel = () => {
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
               />
             </div>
-            <button
+            {/* <button
               onClick={handleExport}
               className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg"
             >
@@ -266,7 +266,7 @@ const DashboardPanel = () => {
               className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors"
             >
               <RefreshCcw size={18} />
-            </button>
+            </button> */}
           </div>
         </div>
 
