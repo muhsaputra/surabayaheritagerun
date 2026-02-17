@@ -11,9 +11,11 @@ import {
   RefreshCcw,
   CalendarClock,
   Eye,
-  ImageIcon,
-  FileDown, // Ikon baru untuk Excel
-  Loader2, // Ikon loading
+  FileDown,
+  Loader2,
+  TrendingUp,
+  Filter,
+  ArrowUpRight,
 } from "lucide-react";
 import DetailModal from "../modals/DetailModal";
 
@@ -29,7 +31,7 @@ const DashboardPanel = () => {
   const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false); // State loading export
+  const [isExporting, setIsExporting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState("Semua");
   const [selectedParticipant, setSelectedParticipant] = useState(null);
@@ -83,7 +85,6 @@ const DashboardPanel = () => {
     fetchData();
   }, []);
 
-  // --- FUNGSI EXPORT EXCEL BARU (SINKRON DENGAN BACKEND) ---
   const handleExportExcel = async () => {
     setIsExporting(true);
     try {
@@ -100,7 +101,7 @@ const DashboardPanel = () => {
       link.href = url;
       link.setAttribute(
         "download",
-        `Database_SHR2026_${new Date().toISOString().split("T")[0]}.xlsx`,
+        `SHR_Database_${new Date().toISOString().split("T")[0]}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -108,7 +109,6 @@ const DashboardPanel = () => {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export Gagal", error);
-      alert("Gagal mengekspor data Excel. Pastikan Anda sudah login.");
     } finally {
       setIsExporting(false);
     }
@@ -126,7 +126,6 @@ const DashboardPanel = () => {
       else if (activeFilter === "Belum Bayar")
         matchFilter = p.paymentStatus !== "paid";
       else if (activeFilter === "Hadir") matchFilter = p.isCheckedIn;
-      else if (activeFilter === "Belum Hadir") matchFilter = !p.isCheckedIn;
       else if (activeFilter === "5K Run") matchFilter = p.category === "5K";
       else if (activeFilter === "3K Walk") matchFilter = p.category === "3K";
       else if (activeFilter === "Presale")
@@ -139,254 +138,293 @@ const DashboardPanel = () => {
     return matchSearch && matchFilter;
   });
 
-  const getPhaseBadgeColor = (phase) => {
-    const p = (phase || "").toLowerCase();
-    if (p.includes("presale"))
-      return "bg-purple-100 text-purple-700 border-purple-200";
-    if (p.includes("early")) return "bg-blue-100 text-blue-700 border-blue-200";
-    return "bg-slate-100 text-slate-600 border-slate-200";
-  };
-
   return (
-    <div className="space-y-8 animate-fade-in-up pb-10">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
+      {/* HEADER SECTION */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
+            Dashboard Overview
+          </h2>
+          <p className="text-slate-500 font-medium">
+            Manajemen data peserta Surabaya Heritage Run 2026
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchData}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all active:scale-95 shadow-sm"
+          >
+            <RefreshCcw size={16} className={loading ? "animate-spin" : ""} />
+            Refresh
+          </button>
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-black transition-all shadow-lg shadow-slate-200 disabled:opacity-50 active:scale-95"
+          >
+            {isExporting ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <FileDown size={18} />
+            )}
+            {isExporting ? "Mengekspor..." : "Export Database"}
+          </button>
+        </div>
+      </div>
+
       {/* STATS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
-            label: "TOTAL PESERTA",
+            label: "Total Peserta",
             value: stats.total,
             icon: Users,
             color: "text-blue-600",
             bg: "bg-blue-50",
+            trend: "+12%",
           },
           {
-            label: "SUDAH CHECK-IN",
+            label: "Check-in",
             value: stats.checkIn,
             icon: CheckCircle,
-            color: "text-green-600",
-            bg: "bg-green-50",
+            color: "text-emerald-600",
+            bg: "bg-emerald-50",
+            trend: "Live",
           },
           {
-            label: "PENDAPATAN",
+            label: "Pendapatan",
             value: formatRupiah(stats.revenue),
             icon: CreditCard,
-            color: "text-slate-800",
+            color: "text-slate-900",
             bg: "bg-slate-100",
             isMoney: true,
           },
           {
-            label: "DAFTAR HARI INI",
+            label: "Pendaftar Hari Ini",
             value: stats.today,
             icon: CalendarClock,
             color: "text-red-600",
             bg: "bg-red-50",
+            trend: "New",
           },
         ].map((stat, idx) => (
           <div
             key={idx}
-            className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"
+            className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
           >
+            <div className="flex justify-between items-start mb-4">
+              <div
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}
+              >
+                <stat.icon size={22} />
+              </div>
+              <span
+                className={`text-[10px] font-black px-2 py-1 rounded-lg ${stat.color} ${stat.bg}`}
+              >
+                {stat.trend}
+              </span>
+            </div>
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase mb-1">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
                 {stat.label}
               </p>
-              <h3 className="text-3xl font-black text-slate-900">
+              <h3
+                className={`text-2xl font-black text-slate-900 ${stat.isMoney ? "tracking-tighter" : ""}`}
+              >
                 {stat.value}
               </h3>
-            </div>
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}
-            >
-              <stat.icon size={24} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* TABLE SECTION */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-100 space-y-4">
-          <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
-            {/* ACTION GROUP: SEARCH & EXCEL */}
-            <div className="flex gap-3 w-full md:w-auto flex-1">
-              <div className="relative flex-1 md:w-80">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder="Cari nama, email, atau NIK..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200"
-                />
-              </div>
-
-              {/* BUTTON EXCEL BARU (DI SEBELAH SEARCH) */}
-              <button
-                onClick={handleExportExcel}
-                disabled={isExporting}
-                className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
-              >
-                {isExporting ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <FileDown size={18} />
-                )}
-                {isExporting ? "Mengekspor..." : "Export Excel"}
-              </button>
-
-              <button
-                onClick={fetchData}
-                className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50"
-              >
-                <RefreshCcw size={18} />
-              </button>
-            </div>
+      {/* FILTER & SEARCH BOX */}
+      <div className="bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
+        <div className="flex flex-col lg:flex-row justify-between gap-4">
+          <div className="relative flex-1">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+              size={20}
+            />
+            <input
+              type="text"
+              placeholder="Cari nama, email, atau NIK peserta..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border-none rounded-2xl text-sm font-semibold focus:ring-2 focus:ring-slate-900/5 transition-all outline-none placeholder:text-slate-400"
+            />
           </div>
-
-          {/* FILTER CHIPS */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              "Semua",
-              "5K Run",
-              "3K Walk",
-              "Lunas",
-              "Belum Bayar",
-              "Presale",
-              "Early Bird",
-              "Regular",
-            ].map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all border ${activeFilter === filter ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}`}
-              >
-                {filter}
-              </button>
-            ))}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 no-scrollbar">
+            <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+              <Filter size={16} className="text-slate-400" />
+              <span className="text-[10px] font-black text-slate-400 uppercase mr-2">
+                Filter:
+              </span>
+              <div className="flex gap-1">
+                {["Semua", "Lunas", "Belum Bayar", "Hadir"].map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setActiveFilter(f)}
+                    className={`px-4 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                      activeFilter === f
+                        ? "bg-slate-900 text-white shadow-md"
+                        : "hover:bg-slate-200 text-slate-500"
+                    }`}
+                  >
+                    {f.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* CATEGORY CHIPS */}
+        <div className="flex flex-wrap gap-2">
+          {["5K Run", "3K Walk", "Presale", "Early Bird", "Regular"].map(
+            (chip) => (
+              <button
+                key={chip}
+                onClick={() => setActiveFilter(chip)}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-all ${
+                  activeFilter === chip
+                    ? "bg-red-600 border-red-600 text-white shadow-lg shadow-red-200"
+                    : "bg-white border-slate-100 text-slate-400 hover:border-slate-300"
+                }`}
+              >
+                {chip}
+              </button>
+            ),
+          )}
+        </div>
+      </div>
+
+      {/* DATA TABLE */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
-                <th className="p-6 w-16 text-center">No</th>
-                <th className="p-6">Peserta</th>
-                <th className="p-6">Kategori / Fase</th>
-                <th className="p-6">Pembayaran</th>
-                <th className="p-6">Waktu Daftar</th>
-                <th className="p-6">Status Check-in</th>
-                <th className="p-6 text-right">Aksi</th>
+              <tr className="bg-slate-900 text-white">
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
+                  No
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
+                  Peserta
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-center">
+                  Info Registrasi
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em]">
+                  Status Pembayaran
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-center">
+                  Kehadiran
+                </th>
+                <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-right">
+                  Detail
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-20 text-center text-slate-400">
-                    Memuat data...
+                  <td colSpan="6" className="py-20 text-center">
+                    <Loader2
+                      className="animate-spin mx-auto text-slate-200"
+                      size={40}
+                    />
+                    <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      Sinkronisasi Server...
+                    </p>
                   </td>
                 </tr>
               ) : filteredParticipants.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="7"
-                    className="p-10 text-center text-slate-400 font-medium"
+                    colSpan="6"
+                    className="py-20 text-center text-slate-400 font-bold uppercase tracking-widest"
                   >
-                    Data tidak ditemukan.
+                    Data tidak ditemukan
                   </td>
                 </tr>
               ) : (
                 filteredParticipants.map((p, idx) => (
                   <tr
                     key={p._id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    className="hover:bg-slate-50/80 transition-all group"
                   >
-                    <td className="p-6 text-slate-500 font-medium text-center">
-                      {idx + 1}
+                    <td className="px-8 py-6 text-xs font-bold text-slate-300 group-hover:text-slate-900 transition-colors">
+                      {String(idx + 1).padStart(2, "0")}
                     </td>
-                    <td className="p-6">
+                    <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+                        <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center font-black text-slate-900 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm">
                           {p.fullName.charAt(0)}
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900">
+                        <div className="flex flex-col">
+                          <span className="font-black text-slate-900 text-sm tracking-tight">
                             {p.fullName}
-                          </p>
-                          <p className="text-xs text-slate-400 font-mono">
-                            {p.nik || "-"}
-                          </p>
+                          </span>
+                          <span className="text-[10px] font-medium text-slate-400 font-mono tracking-tighter">
+                            {p.email}
+                          </span>
                         </div>
                       </div>
                     </td>
-                    <td className="p-6">
-                      <div className="flex flex-col gap-1 items-start">
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col items-center gap-1">
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[9px] font-black border ${p.category === "5K" ? "bg-red-50 text-red-700 border-red-100" : "bg-slate-100 text-slate-700 border-slate-200"}`}
+                          className={`px-2 py-1 rounded-lg text-[9px] font-black border ${
+                            p.category === "5K"
+                              ? "bg-red-50 text-red-600 border-red-100"
+                              : "bg-slate-100 text-slate-700 border-slate-200"
+                          }`}
                         >
-                          {p.category}
+                          {p.category} | {p.jerseySize}
                         </span>
-                        <span
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold border ${getPhaseBadgeColor(p.registrationPhase)}`}
-                        >
-                          {p.registrationPhase || "Regular"}
+                        <span className="text-[10px] font-bold text-slate-400 italic">
+                          #{p.bibNumber || "N/A"}
                         </span>
-                        {p.bibNumber && (
-                          <span className="text-xs font-mono font-bold text-slate-700 mt-1">
-                            #{p.bibNumber}
-                          </span>
-                        )}
                       </div>
                     </td>
-                    <td className="p-6">
-                      <div className="space-y-1">
-                        <span
-                          className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${p.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                    <td className="px-8 py-6">
+                      <div className="flex flex-col gap-1">
+                        <div
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black w-fit ${
+                            p.paymentStatus === "paid"
+                              ? "bg-emerald-50 text-emerald-600"
+                              : "bg-orange-50 text-orange-600"
+                          }`}
                         >
+                          <div
+                            className={`w-1 h-1 rounded-full ${p.paymentStatus === "paid" ? "bg-emerald-500 animate-pulse" : "bg-orange-500"}`}
+                          />
                           {p.paymentStatus === "paid" ? "LUNAS" : "PENDING"}
-                        </span>
-                        <p className="text-xs font-bold text-slate-700">
+                        </div>
+                        <span className="text-xs font-black text-slate-700 ml-1">
                           {formatRupiah(p.pricePaid)}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <div className="text-xs text-slate-500 font-medium flex flex-col">
-                        <span className="flex items-center gap-1">
-                          <CalendarClock size={12} />{" "}
-                          {new Date(p.createdAt).toLocaleDateString("id-ID")}
-                        </span>
-                        <span className="flex items-center gap-1 opacity-60">
-                          <Clock size={12} />{" "}
-                          {new Date(p.createdAt).toLocaleTimeString("id-ID", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}{" "}
-                          WIB
                         </span>
                       </div>
                     </td>
-                    <td className="p-6">
+                    <td className="px-8 py-6 text-center">
                       {p.isCheckedIn ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">
-                          <CheckCircle size={14} /> Hadir
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[10px] font-black border border-emerald-100">
+                          <CheckCircle size={14} /> HADIR
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-50 text-slate-400 text-[10px] font-bold border border-slate-200 opacity-60">
-                          <XCircle size={14} /> Absen
+                        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-50 text-slate-300 text-[10px] font-black border border-slate-100 opacity-60">
+                          <XCircle size={14} /> ABSEN
                         </span>
                       )}
                     </td>
-                    <td className="p-6 text-right">
+                    <td className="px-8 py-6 text-right">
                       <button
                         onClick={() => {
                           setSelectedParticipant(p);
                           setShowDetailModal(true);
                         }}
-                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors"
+                        className="p-3 bg-slate-50 text-slate-400 rounded-2xl hover:bg-slate-900 hover:text-white hover:rotate-12 transition-all shadow-sm active:scale-90"
                       >
                         <Eye size={18} />
                       </button>
@@ -396,6 +434,20 @@ const DashboardPanel = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* TABLE FOOTER */}
+        <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Surabaya Heritage Run 2026 Database
+          </p>
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+            <Users size={12} />
+            <span>
+              Menampilkan {filteredParticipants.length} dari{" "}
+              {participants.length} Peserta
+            </span>
+          </div>
         </div>
       </div>
 
