@@ -12,8 +12,7 @@ import {
   CalendarClock,
   Eye,
   ImageIcon,
-  FileDown,
-  Loader2,
+  Download,
 } from "lucide-react";
 import DetailModal from "../modals/DetailModal";
 
@@ -25,8 +24,7 @@ const formatRupiah = (number) => {
   }).format(number);
 };
 
-// Menambahkan props onExport dan isExporting dari AdminDashboard
-const DashboardPanel = ({ onExport, isExporting }) => {
+const DashboardPanel = () => {
   const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,6 +40,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
     today: 0,
   });
 
+  // Ambil URL API dari env atau default ke localhost
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
   const fetchData = async () => {
@@ -78,6 +77,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
       }
     } catch (error) {
       console.error("Gagal ambil data", error);
+      // Jika error 401 (Unauthorized), tendang kembali ke login
       if (error.response?.status === 401) {
         localStorage.removeItem("adminToken");
         localStorage.removeItem("isAdminAuthenticated");
@@ -116,6 +116,40 @@ const DashboardPanel = ({ onExport, isExporting }) => {
     }
     return matchSearch && matchFilter;
   });
+
+  const handleExport = () => {
+    const headers = [
+      "No,Nama,Kategori,Fase,Email,HP,StatusBayar,CheckIn,WaktuDaftar",
+    ];
+    const rows = filteredParticipants.map((p, i) => {
+      const safeString = (str) => `"${(str || "").replace(/"/g, '""')}"`;
+      const regTime = new Date(p.createdAt).toLocaleString("id-ID");
+      return [
+        i + 1,
+        safeString(p.fullName),
+        safeString(p.category),
+        safeString(p.registrationPhase || "-"),
+        safeString(p.email),
+        safeString(`'${p.phoneNumber}`),
+        safeString(p.paymentStatus),
+        safeString(p.isCheckedIn ? "Sudah" : "Belum"),
+        safeString(regTime),
+      ].join(",");
+    });
+
+    const csvContent = [headers, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `Data_Peserta_HeritageRun_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getPhaseBadgeColor = (phase) => {
     const p = (phase || "").toLowerCase();
@@ -168,7 +202,9 @@ const DashboardPanel = ({ onExport, isExporting }) => {
               <p className="text-xs font-bold text-slate-400 uppercase mb-1">
                 {stat.label}
               </p>
-              <h3 className={`text-3xl font-black text-slate-900`}>
+              <h3
+                className={`text-3xl font-black ${stat.isMoney ? "text-slate-900 tracking-tight" : "text-slate-900"}`}
+              >
                 {stat.value}
               </h3>
             </div>
@@ -183,49 +219,8 @@ const DashboardPanel = ({ onExport, isExporting }) => {
 
       {/* TABLE SECTION */}
       <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-        {/* BARIS ACTION & SEARCH */}
-        <div className="p-6 border-b border-slate-100 space-y-4">
-          <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
-            {/* SEARCH & REFRESH */}
-            <div className="flex gap-3 w-full md:w-auto">
-              <div className="relative flex-1 md:w-80">
-                <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder="Cari nama, email, atau NIK..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
-                />
-              </div>
-              <button
-                onClick={fetchData}
-                className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors"
-              >
-                <RefreshCcw size={18} />
-              </button>
-
-              {/* TOMBOL EXCEL MODERN */}
-              {/* <button
-                onClick={onExport}
-                disabled={isExporting}
-                className="px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 disabled:opacity-50"
-              >
-                {isExporting ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <FileDown size={16} />
-                )}
-                {isExporting ? "Memproses..." : "Export Excel"}
-              </button> */}
-            </div>
-          </div>
-
-          {/* FILTER BUTTONS */}
-          <div className="flex flex-wrap gap-2 pt-2">
+        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between gap-4 items-center">
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
             {[
               "Semua",
               "5K Run",
@@ -239,19 +234,47 @@ const DashboardPanel = ({ onExport, isExporting }) => {
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all border ${activeFilter === filter ? "bg-slate-900 text-white border-slate-900 shadow-lg" : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${activeFilter === filter ? "bg-slate-900 text-white border-slate-900 shadow-lg" : "bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:bg-slate-50"}`}
               >
                 {filter}
               </button>
             ))}
+          </div>
+
+          <div className="flex gap-3 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Cari nama, email, atau NIK..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
+              />
+            </div>
+            <button
+              onClick={handleExport}
+              className="px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-lg"
+            >
+              <Download size={16} /> Export
+            </button>
+            <button
+              onClick={fetchData}
+              className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors"
+            >
+              <RefreshCcw size={18} />
+            </button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider font-bold border-b border-slate-100">
-                <th className="p-6 w-16 text-center">No</th>
+              <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-bold border-b border-slate-100">
+                <th className="p-6 w-16">No</th>
                 <th className="p-6">Peserta</th>
                 <th className="p-6">Kategori / Fase</th>
                 <th className="p-6">Pembayaran</th>
@@ -263,11 +286,12 @@ const DashboardPanel = ({ onExport, isExporting }) => {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-20 text-center">
-                    <Loader2
-                      className="animate-spin mx-auto text-slate-300"
-                      size={30}
-                    />
+                  <td colSpan="7" className="p-10 text-center text-slate-400">
+                    <div className="flex justify-center items-center gap-2">
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-75"></div>
+                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-150"></div>
+                    </div>
                   </td>
                 </tr>
               ) : filteredParticipants.length === 0 ? (
@@ -276,7 +300,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                     colSpan="7"
                     className="p-10 text-center text-slate-400 font-medium"
                   >
-                    Data tidak ditemukan.
+                    Tidak ada data peserta ditemukan.
                   </td>
                 </tr>
               ) : (
@@ -285,20 +309,20 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                     key={p._id}
                     className="hover:bg-slate-50/80 transition-colors group"
                   >
-                    <td className="p-6 text-slate-500 font-medium text-center">
+                    <td className="p-6 text-slate-500 font-medium">
                       {idx + 1}
                     </td>
                     <td className="p-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs">
+                        <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
                           {p.fullName.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 text-sm">
+                          <p className="font-bold text-slate-900">
                             {p.fullName}
                           </p>
-                          <p className="text-[10px] text-slate-400 font-mono leading-none mt-1">
-                            {p.email}
+                          <p className="text-xs text-slate-400 font-mono">
+                            {p.nik || "-"}
                           </p>
                         </div>
                       </div>
@@ -306,17 +330,17 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                     <td className="p-6">
                       <div className="flex flex-col gap-1 items-start">
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${p.category === "5K" ? "bg-red-50 text-red-700 border-red-100" : "bg-slate-100 text-slate-700 border-slate-200"}`}
+                          className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider border ${p.category === "5K" ? "bg-red-50 text-red-700 border-red-100" : "bg-slate-100 text-slate-700 border-slate-200"}`}
                         >
                           {p.category}
                         </span>
                         <span
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${getPhaseBadgeColor(p.registrationPhase)}`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${getPhaseBadgeColor(p.registrationPhase)}`}
                         >
                           {p.registrationPhase || "Regular"}
                         </span>
                         {p.bibNumber && (
-                          <span className="text-[10px] font-mono font-bold text-slate-400">
+                          <span className="text-xs font-mono font-bold text-slate-700 mt-1">
                             #{p.bibNumber}
                           </span>
                         )}
@@ -325,23 +349,32 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                     <td className="p-6">
                       <div className="space-y-1">
                         <span
-                          className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${p.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                          className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${p.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                         >
                           {p.paymentStatus === "paid" ? "LUNAS" : "PENDING"}
                         </span>
                         <p className="text-xs font-bold text-slate-700">
                           {formatRupiah(p.pricePaid)}
                         </p>
+                        {p.paymentStatus !== "paid" && p.paymentProof ? (
+                          <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                            <ImageIcon size={10} /> Ada Bukti
+                          </span>
+                        ) : p.paymentStatus !== "paid" ? (
+                          <span className="text-[10px] text-slate-400 italic">
+                            Belum Bayar
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="p-6">
-                      <div className="text-[10px] text-slate-500 font-medium flex flex-col">
+                      <div className="text-xs text-slate-500 font-medium flex flex-col gap-0.5">
                         <span className="flex items-center gap-1">
-                          <CalendarClock size={10} />{" "}
+                          <CalendarClock size={12} />{" "}
                           {new Date(p.createdAt).toLocaleDateString("id-ID")}
                         </span>
-                        <span className="flex items-center gap-1 opacity-60">
-                          <Clock size={10} />{" "}
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} />{" "}
                           {new Date(p.createdAt).toLocaleTimeString("id-ID", {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -352,12 +385,12 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                     </td>
                     <td className="p-6">
                       {p.isCheckedIn ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold border border-green-100">
-                          <CheckCircle size={12} /> Hadir
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">
+                          <CheckCircle size={14} /> Check-in
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-50 text-slate-400 text-[10px] font-bold border border-slate-200 opacity-60">
-                          <XCircle size={12} /> Absen
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 text-xs font-bold border border-orange-100 opacity-60">
+                          <XCircle size={14} /> Belum Hadir
                         </span>
                       )}
                     </td>
@@ -367,7 +400,7 @@ const DashboardPanel = ({ onExport, isExporting }) => {
                           setSelectedParticipant(p);
                           setShowDetailModal(true);
                         }}
-                        className="p-2 rounded-lg hover:bg-slate-900 hover:text-white text-slate-400 transition-all"
+                        className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors"
                       >
                         <Eye size={18} />
                       </button>
@@ -377,6 +410,14 @@ const DashboardPanel = ({ onExport, isExporting }) => {
               )}
             </tbody>
           </table>
+        </div>
+
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 text-xs text-slate-400 flex justify-between">
+          <span>
+            Menampilkan {filteredParticipants.length} dari {participants.length}{" "}
+            data
+          </span>
+          <span>Halaman 1 dari 1</span>
         </div>
       </div>
 
