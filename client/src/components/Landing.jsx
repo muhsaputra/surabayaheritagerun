@@ -185,136 +185,104 @@ const LandingPage = () => {
       </div>
 
       {/* --- TIMELINE SECTION --- */}
-      <div className="px-4 mx-auto max-w-6xl mb-24">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b-2 border-slate-200 pb-4">
-          <div>
-            <span className="text-red-600 font-bold tracking-widest uppercase text-sm">
-              Timeline
-            </span>
-            <h2 className="text-4xl font-serif font-bold text-slate-900 mt-2">
-              Jadwal Pendaftaran
-            </h2>
-          </div>
-          <div className="hidden md:block text-slate-400 font-medium">
-            Amankan slot sebelum habis!
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {timelineData.phases.map((phase, index) => {
+          const isActive = index === timelineData.activePhaseIndex;
+          const isPassed = index < timelineData.activePhaseIndex;
+          const isUpcoming = index > timelineData.activePhaseIndex;
 
-        {loadingTimeline ? (
-          <div className="text-center py-12 text-slate-400">
-            Memuat Jadwal...
-          </div>
-        ) : !timelineData ? (
-          <div className="text-center py-12 text-red-400">
-            Gagal memuat jadwal.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {timelineData.phases.map((phase, index) => {
-              const isActive = index === timelineData.activePhaseIndex;
-              const isPassed = index < timelineData.activePhaseIndex;
-              const isUpcoming = index > timelineData.activePhaseIndex;
+          // --- PENAMBAHAN LOGIKA DESKRIPSI MANUAL ---
+          const getPhaseDescription = (name) => {
+            const n = name.toLowerCase();
+            if (n.includes("presale")) return "Februari 2026";
+            if (n.includes("early")) return "2 - 9 Maret 2026";
+            if (n.includes("regular")) return "16 Mar - 5 Apr 2026";
+            return "";
+          };
 
-              const limit5K = phase.limits["5K"] || 0;
-              const limit3K = phase.limits["3K"] || 0;
-              const totalQuota = limit5K + limit3K;
+          const limit5K = phase.limits["5K"] || 0;
+          const limit3K = phase.limits["3K"] || 0;
+          const totalQuota = limit5K + limit3K;
+          const totalSisa = timelineData.remaining?.totalSisa || 0;
 
-              const totalSisa = timelineData.remaining?.totalSisa || 0;
+          let percentageLeft =
+            totalQuota > 0 ? (totalSisa / totalQuota) * 100 : 0;
+          if (percentageLeft > 100) percentageLeft = 100;
+          if (percentageLeft < 0) percentageLeft = 0;
 
-              let percentageLeft =
-                totalQuota > 0 ? (totalSisa / totalQuota) * 100 : 0;
-              if (percentageLeft > 100) percentageLeft = 100;
-              if (percentageLeft < 0) percentageLeft = 0;
+          const isSoldOut = isActive && totalSisa === 0;
 
-              const isSoldOut = isActive && totalSisa === 0;
-
-              return (
-                <div
-                  key={index}
-                  className={`
-                    relative p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between min-h-[280px]
-                    ${
-                      isActive
-                        ? "bg-slate-900 text-white shadow-2xl scale-[1.02] border-slate-900 z-10 ring-4 ring-slate-100"
-                        : isPassed
-                          ? "bg-slate-50 text-slate-400 border-slate-200 grayscale opacity-80"
-                          : "bg-white text-slate-900 border-slate-200 hover:border-red-200 hover:shadow-lg"
-                    }
-                  `}
-                >
-                  <div>
-                    <div className="flex justify-between items-start mb-6">
-                      <div
-                        className={`p-3 rounded-xl transition-colors ${isActive ? "bg-white/10 text-red-500" : "bg-slate-100 text-slate-400"}`}
-                      >
-                        {getTimelineIcon(phase.name)}
-                      </div>
-                      {isActive && (
-                        <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg shadow-red-600/40">
-                          Sedang Dibuka
-                        </span>
-                      )}
-                      {isPassed && (
-                        <span className="bg-slate-200 text-slate-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                          <CheckCircle size={12} /> Selesai
-                        </span>
-                      )}
-                      {isUpcoming && (
-                        <span className="bg-slate-100 text-slate-400 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                          <Lock size={12} /> Segera
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-bold text-2xl mb-1">{phase.name}</h3>
-                    <p
-                      className={`font-bold text-sm mb-6 ${isActive ? "text-slate-300" : "text-slate-400"}`}
-                    >
-                      {new Date(phase.start).toLocaleDateString("id-ID", {
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
+          return (
+            <div
+              key={index}
+              className={`
+          relative p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between min-h-[300px]
+          ${
+            isActive
+              ? "bg-slate-900 text-white shadow-2xl scale-[1.02] border-slate-900 z-10 ring-4 ring-slate-100"
+              : isPassed
+                ? "bg-slate-50 text-slate-400 border-slate-200 grayscale opacity-80"
+                : "bg-white text-slate-900 border-slate-200 hover:border-red-200 hover:shadow-lg"
+          }
+        `}
+            >
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div
+                    className={`p-3 rounded-xl transition-colors ${isActive ? "bg-white/10 text-red-500" : "bg-slate-100 text-slate-400"}`}
+                  >
+                    {getTimelineIcon(phase.name)}
                   </div>
-
-                  {isActive ? (
-                    <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
-                          <Users size={14} className="text-red-500" /> Sisa Slot
-                        </span>
-                        <span
-                          className={`text-xl font-black ${totalSisa < 10 ? "text-red-500" : "text-white"}`}
-                        >
-                          {isSoldOut ? "HABIS" : totalSisa}
-                        </span>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-1000 ${percentageLeft < 20 ? "bg-red-600" : "bg-green-500"}`}
-                          style={{ width: `${percentageLeft}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-[10px] text-slate-400 mt-2 text-right italic">
-                        {isSoldOut
-                          ? "Mohon tunggu fase berikutnya."
-                          : "Segera daftar sebelum kehabisan!"}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-4 pt-4 border-t border-slate-100/10">
-                      <p className="text-xs text-slate-400">
-                        {isPassed
-                          ? "Pendaftaran fase ini telah ditutup."
-                          : "Menunggu giliran fase ini dibuka."}
-                      </p>
-                    </div>
+                  {isActive && (
+                    <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg shadow-red-600/40">
+                      Sedang Dibuka
+                    </span>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        )}
+
+                <h3 className="font-bold text-2xl mb-1">{phase.name}</h3>
+
+                {/* INFORMASI TANGGAL YANG DIUPDATE */}
+                <div
+                  className={`inline-block px-3 py-1 rounded-lg mb-4 text-xs font-bold ${isActive ? "bg-red-600/20 text-red-400" : "bg-slate-100 text-slate-500"}`}
+                >
+                  {getPhaseDescription(phase.name)}
+                </div>
+              </div>
+
+              {/* ... Sisa kode Quota bar (Sama seperti sebelumnya) ... */}
+              {isActive ? (
+                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  {/* ... bagian sisa slot ... */}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
+                      <Users size={14} className="text-red-500" /> Sisa Slot
+                    </span>
+                    <span
+                      className={`text-xl font-black ${totalSisa < 10 ? "text-red-500" : "text-white"}`}
+                    >
+                      {isSoldOut ? "HABIS" : totalSisa}
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-1000 ${percentageLeft < 20 ? "bg-red-600" : "bg-green-500"}`}
+                      style={{ width: `${percentageLeft}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 pt-4 border-t border-slate-100/10">
+                  <p className="text-xs text-slate-400">
+                    {isPassed
+                      ? "Pendaftaran fase ini telah ditutup."
+                      : "Menunggu giliran fase ini dibuka."}
+                  </p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* --- KATEGORI LARI --- */}
