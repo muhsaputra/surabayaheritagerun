@@ -86,8 +86,8 @@ exports.exportExcel = async (req, res) => {
       { header: "SIZE", key: "jerseySize", width: 15 },
       { header: "WHATSAPP", key: "whatsapp", width: 22 },
       { header: "GOL. DARAH", key: "bloodType", width: 15 },
-      { header: "KONTAK (NAMA)", key: "emergencyName", width: 25 },
-      { header: "KONTAK (TELP)", key: "emergencyPhone", width: 22 },
+      { header: "NAMA KONTAK DARURAT", key: "emergencyName", width: 25 },
+      { header: "TELP KONTAK DARURAT", key: "emergencyPhone", width: 22 },
       { header: "STATUS", key: "paymentStatus", width: 18 },
       { header: "FASE", key: "registrationPhase", width: 18 },
       { header: "TANGGAL DAFTAR", key: "createdAt", width: 22 },
@@ -140,18 +140,22 @@ exports.exportExcel = async (req, res) => {
       };
     });
 
-    // --- 4. INSERT DATA (Mulai Baris 3) ---
+    // --- 4. INSERT DATA ---
     participants.forEach((p, index) => {
       const rowIndex = index + 3;
       const row = worksheet.getRow(rowIndex);
       row.height = 25;
 
-      // Parsing Emergency Contact agar tidak muncul format JSON {"phone":...}
+      // --- LOGIKA PENGAMBILAN WHATSAPP (FIX KOSONG) ---
+      // Kode ini mengecek p.whatsapp, jika kosong cek p.phone, jika kosong cek p.phoneNumber
+      const waNumber = p.whatsapp || p.phone || p.phoneNumber || "-";
+
+      // Parsing Emergency Contact
       let eName = "-";
       let ePhone = "-";
       if (p.emergencyContact) {
         eName = p.emergencyContact.name || p.emergencyContact;
-        ePhone = p.emergencyContact.phone || "-";
+        ePhone = p.emergencyContact.phone || p.emergencyContact.whatsapp || "-";
       }
 
       const rowData = {
@@ -160,7 +164,7 @@ exports.exportExcel = async (req, res) => {
         fullName: p.fullName ? p.fullName.toUpperCase() : "-",
         category: p.category || "-",
         jerseySize: p.jerseySize || "-",
-        whatsapp: p.whatsapp || "-",
+        whatsapp: waNumber, // Menggunakan variabel waNumber yang sudah divalidasi
         bloodType: p.bloodType || "-",
         emergencyName: eName,
         emergencyPhone: ePhone,
@@ -169,13 +173,11 @@ exports.exportExcel = async (req, res) => {
         createdAt: new Date(p.createdAt).toLocaleDateString("id-ID"),
       };
 
-      // Memasukkan data ke baris
       row.values = Object.values(rowData);
 
-      // Styling Baris
+      // --- STYLING BARIS ---
       row.eachCell((cell, colNumber) => {
         if (colNumber >= 2) {
-          // Lewati kolom A (margin)
           cell.font = {
             name: "Segoe UI",
             size: 10,
@@ -183,7 +185,12 @@ exports.exportExcel = async (req, res) => {
           };
           cell.alignment = { vertical: "middle", horizontal: "center" };
 
-          // Zebra Striping
+          // Pastikan kolom WhatsApp dan Kontak Darurat dianggap TEXT agar nomor tidak rusak
+          // Kolom F (6) adalah WhatsApp, Kolom I (9) adalah Emergency Phone
+          if (colNumber === 6 || colNumber === 9) {
+            cell.numFmt = "@";
+          }
+
           if (index % 2 === 1) {
             cell.fill = {
               type: "pattern",
@@ -191,12 +198,9 @@ exports.exportExcel = async (req, res) => {
               fgColor: { argb: "FFF8FAFC" },
             };
           }
-
-          // Warna khusus untuk BIB dan Status
           if (colNumber === 2)
             cell.font = { bold: true, color: { argb: "FFDC2626" } };
           if (colNumber === 10) {
-            // Kolom Status
             cell.font = {
               bold: true,
               color: {
