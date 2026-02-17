@@ -8,24 +8,19 @@ import {
   CheckCircle,
   ArrowLeft,
   Download,
-  Ticket,
   Loader2,
   Calendar,
   MapPin,
   Clock,
   AlertCircle,
   ShieldCheck,
-  User,
   Hash,
   Shirt,
   ChevronRight,
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
-// ... imports (React, QRCodeCanvas, dll tetap sama)
-
-// --- KOMPONEN TIKET PREMIUM (KHUSUS PDF) ---
-// --- KOMPONEN TIKET PREMIUM (KHUSUS PDF) ---
+// --- KOMPONEN TIKET PREMIUM (KHUSUS UNTUK GENERATE PDF) ---
 const PrintableTicket = React.forwardRef(({ data }, ref) => {
   if (!data) return null;
 
@@ -35,7 +30,7 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
       style={{
         width: "800px",
         background: "#ffffff",
-        fontFamily: "Helvetica, Arial, sans-serif", // Konsisten dengan email
+        fontFamily: "Helvetica, Arial, sans-serif",
         position: "relative",
         color: "#0F172A",
       }}
@@ -87,9 +82,10 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
               fontSize: "12px",
               fontWeight: "bold",
               marginTop: "10px",
+              textTransform: "uppercase",
             }}
           >
-            PEMBAYARAN TELAH DIVERIFIKASI / LUNAS
+            Pembayaran Telah Diverifikasi / Lunas
           </div>
         </div>
 
@@ -109,6 +105,7 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
               borderBottom: "1px dashed #CBD5E1",
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
             <div>
@@ -118,15 +115,17 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#64748B",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0",
                 }}
               >
                 Kategori
               </p>
               <p
                 style={{
-                  fontSize: "20px",
+                  fontSize: "22px",
                   color: "#DC2626",
                   fontWeight: "900",
+                  margin: "0",
                 }}
               >
                 {data.category} RUN
@@ -139,15 +138,17 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#64748B",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0",
                 }}
               >
                 Nomor BIB
               </p>
               <p
                 style={{
-                  fontSize: "24px",
+                  fontSize: "28px",
                   color: "#0F172A",
                   fontWeight: "900",
+                  margin: "0",
                 }}
               >
                 #{data.bibNumber || "---"}
@@ -172,11 +173,12 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Hari & Tanggal
               </p>
-              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <p style={{ fontSize: "16px", fontWeight: "bold", margin: "0" }}>
                 Minggu, 24 Mei 2026
               </p>
             </div>
@@ -187,11 +189,14 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Flag Off
               </p>
-              <p style={{ fontSize: "16px", fontWeight: "bold" }}>06.00 WIB</p>
+              <p style={{ fontSize: "16px", fontWeight: "bold", margin: "0" }}>
+                06.00 WIB
+              </p>
             </div>
             <div>
               <p
@@ -200,11 +205,12 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Tempat (Venue)
               </p>
-              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <p style={{ fontSize: "16px", fontWeight: "bold", margin: "0" }}>
                 Plaza Internatio
               </p>
             </div>
@@ -215,11 +221,12 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Start / Finish
               </p>
-              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <p style={{ fontSize: "16px", fontWeight: "bold", margin: "0" }}>
                 Jl. Garuda, Surabaya
               </p>
             </div>
@@ -230,11 +237,12 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Ukuran Jersey
               </p>
-              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <p style={{ fontSize: "16px", fontWeight: "bold", margin: "0" }}>
                 {data.jerseySize}
               </p>
             </div>
@@ -245,6 +253,7 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   color: "#94A3B8",
                   fontWeight: "bold",
                   textTransform: "uppercase",
+                  margin: "0 0 4px 0",
                 }}
               >
                 Status Tiket
@@ -254,6 +263,7 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                   fontSize: "16px",
                   fontWeight: "bold",
                   color: "#16A34A",
+                  margin: "0",
                 }}
               >
                 PAID / VALID
@@ -275,16 +285,19 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                 padding: "15px",
                 border: "3px solid #0F172A",
                 borderRadius: "20px",
+                background: "#ffffff",
               }}
             >
-              <QRCodeCanvas value={data._id} size={200} level="H" />
+              <QRCodeCanvas value={data._id} size={220} level="H" />
             </div>
             <p
               style={{
-                marginTop: "15px",
-                fontWeight: "800",
+                marginTop: "20px",
+                fontWeight: "900",
                 color: "#0F172A",
                 fontSize: "16px",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
               }}
             >
               SCAN SAAT PENGAMBILAN RACE PACK
@@ -294,6 +307,7 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
                 color: "#94A3B8",
                 fontSize: "11px",
                 fontFamily: "monospace",
+                marginTop: "5px",
               }}
             >
               ID: {data._id}
@@ -315,7 +329,13 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
           Harap membawa kartu identitas (KTP) asli saat registrasi ulang.
         </p>
         <p
-          style={{ margin: "5px 0 0 0", fontSize: "10px", fontWeight: "bold" }}
+          style={{
+            margin: "5px 0 0 0",
+            fontSize: "10px",
+            fontWeight: "bold",
+            color: "#ffffff",
+            letterSpacing: "1px",
+          }}
         >
           WWW.SURABAYAHERITAGERUN.COM
         </p>
@@ -323,9 +343,6 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
     </div>
   );
 });
-
-// ... Sisa kode CheckStatusPage (Logic handleDownloadPDF, dll) TETAP SAMA ...
-// ... Pastikan handleDownloadPDF menggunakan scale: 2 atau 3 agar gambar tajam ...
 
 const CheckStatusPage = () => {
   const [email, setEmail] = useState("");
@@ -338,8 +355,7 @@ const CheckStatusPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-
-  const printRef = useRef(null); // Ref untuk hidden ticket
+  const printRef = useRef(null);
 
   useEffect(() => {
     let autoEmail = location.state?.email || searchParams.get("email");
@@ -359,20 +375,14 @@ const CheckStatusPage = () => {
     setIsTicketLoaded(false);
 
     try {
-      // --- UPDATE CORS & URL API ---
-      // Menggunakan variabel environment agar memanggil server Koyeb saat online
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
-
-      const res = await axios.post(`${apiUrl}/api/check-status`, {
-        email,
-      });
+      const res = await axios.post(`${apiUrl}/api/check-status`, { email });
 
       if (res.data.success) {
         setResult(res.data.data);
-        setTimeout(() => setIsTicketLoaded(true), 100);
+        setTimeout(() => setIsTicketLoaded(true), 150);
       }
     } catch (err) {
-      // Jika error 403/401 muncul di konsol, itu tandanya kebijakan CORS di backend belum mengizinkan domain Vercel
       setError("Data tidak ditemukan. Pastikan email yang dimasukkan benar.");
     } finally {
       setLoading(false);
@@ -380,31 +390,26 @@ const CheckStatusPage = () => {
   };
 
   const handleDownloadPDF = async () => {
-    if (!printRef.current) return;
+    if (!printRef.current || !result) return;
     setDownloading(true);
 
     try {
-      // Memberi waktu sedikit agar QR Code ter-render sempurna
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 600));
 
       const canvas = await html2canvas(printRef.current, {
-        scale: 3, // SKALA 3 membuat PDF sangat tajam saat di-print
-        useCORS: true, // Penting jika ada gambar dari domain lain
+        scale: 3,
+        useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 1.0);
       const pdf = new jsPDF("p", "mm", "a4");
-
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      // Hitung rasio agar pas di kertas A4
       const imgProps = pdf.getImageProperties(imgData);
       const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      // Tambahkan gambar ke PDF (Center posisi)
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
       pdf.save(`Tiket_SHR_${result.fullName.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
@@ -416,16 +421,15 @@ const CheckStatusPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-red-100 selection:text-red-900 relative">
-      {/* HIDDEN PRINTABLE TICKET */}
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 relative">
+      {/* HIDDEN PRINTABLE COMPONENT */}
       <div style={{ position: "absolute", top: "-10000px", left: "-10000px" }}>
         <PrintableTicket ref={printRef} data={result} />
       </div>
 
-      {/* HEADER BACKGROUND */}
+      {/* HEADER VISUAL */}
       <div className="absolute top-0 left-0 w-full h-80 bg-slate-900 overflow-hidden rounded-b-[3rem] shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 via-transparent to-transparent"></div>
-        {/* Pattern */}
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -436,7 +440,6 @@ const CheckStatusPage = () => {
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pt-10 pb-20">
-        {/* TOP BAR */}
         <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => navigate("/")}
@@ -444,8 +447,8 @@ const CheckStatusPage = () => {
           >
             <ArrowLeft size={16} /> Beranda
           </button>
-          <span className="text-white/60 font-serif text-sm tracking-wider">
-            OFFICIAL CHECKER
+          <span className="text-white/60 font-serif text-sm tracking-widest uppercase">
+            Official Checker
           </span>
         </div>
 
@@ -461,7 +464,7 @@ const CheckStatusPage = () => {
         {/* SEARCH BOX */}
         <form
           onSubmit={handleCheck}
-          className="bg-white p-2 rounded-2xl shadow-2xl shadow-black/20 mb-8 flex relative z-20 transform transition-all hover:scale-[1.01]"
+          className="bg-white p-2 rounded-2xl shadow-2xl mb-8 flex relative z-20 transform transition-all hover:scale-[1.01]"
         >
           <div className="flex-1 relative">
             <Search
@@ -500,12 +503,9 @@ const CheckStatusPage = () => {
           <div
             className={`transition-all duration-700 ${isTicketLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
           >
-            {/* CARD TIKET UTAMA */}
-            <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 mb-8 relative group">
-              {/* Top Decor Line */}
+            <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200 mb-8 relative">
               <div className="h-2 w-full bg-gradient-to-r from-red-600 to-red-400"></div>
 
-              {/* HEADER TIKET */}
               <div className="px-8 pt-8 pb-4 flex justify-between items-start">
                 <div>
                   <span className="inline-block px-3 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold tracking-widest uppercase rounded-full mb-3">
@@ -516,7 +516,6 @@ const CheckStatusPage = () => {
                   </h2>
                   <p className="text-slate-500 text-sm mt-1">{result.email}</p>
                 </div>
-                {/* Badge Kategori */}
                 <div
                   className={`flex flex-col items-center justify-center w-20 h-20 rounded-2xl shadow-inner ${result.category === "5K" ? "bg-slate-900 text-white" : "bg-red-600 text-white"}`}
                 >
@@ -527,27 +526,23 @@ const CheckStatusPage = () => {
                 </div>
               </div>
 
-              {/* DASHED LINE */}
+              {/* DASHED LINE SEPARATOR */}
               <div className="relative h-1 my-4">
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full border-t-2 border-dashed border-slate-200"></div>
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-50 rounded-r-full -ml-3"></div>
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-50 rounded-l-full -mr-3"></div>
               </div>
 
-              {/* BODY INFO GRID */}
               <div className="px-8 py-4">
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  {/* BIB NUMBER */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                       <Hash size={12} /> Nomor BIB
                     </span>
-                    <span className="text-3xl font-black text-red-600 font-mono tracking-tighter">
+                    <span className="text-3xl font-black text-red-600 font-mono">
                       {result.bibNumber || "---"}
                     </span>
                   </div>
-
-                  {/* JERSEY SIZE */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center justify-center text-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                       <Shirt size={12} /> Jersey
@@ -558,15 +553,12 @@ const CheckStatusPage = () => {
                   </div>
                 </div>
 
-                {/* EVENT DETAILS (NEW SECTION) */}
+                {/* INFO EVENT */}
                 <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-
                   <div className="relative z-10 space-y-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                        <Calendar className="text-red-400" size={20} />
-                      </div>
+                      <Calendar className="text-red-400" size={20} />
                       <div>
                         <p className="text-[10px] font-bold text-white/50 uppercase">
                           Tanggal
@@ -574,23 +566,17 @@ const CheckStatusPage = () => {
                         <p className="font-bold text-sm">Minggu, 24 Mei 2026</p>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                        <Clock className="text-red-400" size={20} />
-                      </div>
+                      <Clock className="text-red-400" size={20} />
                       <div>
                         <p className="text-[10px] font-bold text-white/50 uppercase">
-                          Waktu
+                          Waktu Flag Off
                         </p>
-                        <p className="font-bold text-sm">06:00 WIB - Selesai</p>
+                        <p className="font-bold text-sm">06:00 WIB</p>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="text-red-400" size={20} />
-                      </div>
+                      <MapPin className="text-red-400" size={20} />
                       <div>
                         <p className="text-[10px] font-bold text-white/50 uppercase">
                           Lokasi
@@ -603,11 +589,10 @@ const CheckStatusPage = () => {
                   </div>
                 </div>
 
-                {/* STATUS BAR */}
                 <div className="mb-6">
                   {result.paymentStatus === "paid" ? (
                     <div className="bg-green-50 text-green-700 py-3 px-4 rounded-xl border border-green-200 flex items-center justify-center gap-2 font-bold text-sm">
-                      <CheckCircle size={18} /> PEMBAYARAN LUNAS
+                      <CheckCircle size={18} /> PEMBAYARAN TERKONFIRMASI
                     </div>
                   ) : (
                     <div className="bg-orange-50 text-orange-700 py-3 px-4 rounded-xl border border-orange-200 flex items-center justify-center gap-2 font-bold text-sm animate-pulse">
@@ -617,39 +602,38 @@ const CheckStatusPage = () => {
                 </div>
               </div>
 
-              {/* FOOTER QR (Untuk Web View) */}
               <div className="bg-slate-50 p-6 border-t border-slate-100 flex flex-col items-center text-center">
                 <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100 mb-3">
-                  <QRCodeCanvas value={result._id} size={100} />
+                  <QRCodeCanvas value={result._id} size={110} level="H" />
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono">
-                  ID: {result._id}
+                <p className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
+                  Scan for Check-in
                 </p>
               </div>
             </div>
 
-            {/* ACTION BUTTONS */}
+            {/* Tombol Aksi */}
             {result.paymentStatus === "paid" ? (
               <button
                 onClick={handleDownloadPDF}
                 disabled={downloading}
-                className="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-slate-800 hover:shadow-2xl transition-all flex justify-center items-center gap-3 transform hover:-translate-y-1"
+                className="w-full bg-slate-900 text-white font-bold py-5 rounded-2xl shadow-xl hover:bg-slate-800 transition-all flex justify-center items-center gap-3 transform hover:-translate-y-1 disabled:opacity-70"
               >
                 {downloading ? (
                   <Loader2 className="animate-spin" />
                 ) : (
                   <Download />
                 )}
-                {downloading ? "Memproses PDF..." : "Simpan E-Ticket (PDF)"}
+                {downloading ? "Memproses PDF..." : "Download E-Ticket (PDF)"}
               </button>
             ) : (
               <button
                 onClick={() =>
                   navigate("/payment", { state: { userData: result } })
                 }
-                className="w-full bg-red-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-red-700 hover:shadow-red-600/30 transition-all flex justify-center items-center gap-3 transform hover:-translate-y-1"
+                className="w-full bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl hover:bg-red-700 transition-all flex justify-center items-center gap-3 transform hover:-translate-y-1"
               >
-                Bayar Sekarang <ChevronRight />
+                Lanjutkan ke Pembayaran <ChevronRight size={20} />
               </button>
             )}
           </div>
