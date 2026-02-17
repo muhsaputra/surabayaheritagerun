@@ -14,9 +14,11 @@ import {
   FileDown,
   Loader2,
   Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import DetailModal from "../modals/DetailModal";
-import DashboardCharts from "./DashboardCharts"; // Pastikan file ini tersedia di folder yang sama
+import DashboardCharts from "./DashboardCharts";
 
 const formatRupiah = (number) => {
   return new Intl.NumberFormat("id-ID", {
@@ -35,6 +37,10 @@ const DashboardPanel = () => {
   const [activeFilter, setActiveFilter] = useState("Semua");
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // --- PAGINATION STATE ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // Setel ke 10 atau 15 sesuai keinginan
 
   const [stats, setStats] = useState({
     total: 0,
@@ -56,17 +62,13 @@ const DashboardPanel = () => {
       if (res.data.success) {
         const data = res.data.data;
         setParticipants(data);
-
-        // Hitung Statistik
         const totalRevenue = data
           .filter((p) => p.paymentStatus === "paid")
           .reduce((acc, curr) => acc + (curr.pricePaid || 0), 0);
-
         const todayCount = data.filter(
           (p) =>
             new Date(p.createdAt).toDateString() === new Date().toDateString(),
         ).length;
-
         setStats({
           total: data.length,
           checkIn: data.filter((p) => p.isCheckedIn).length,
@@ -87,6 +89,11 @@ const DashboardPanel = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Reset ke halaman 1 jika filter atau pencarian berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeFilter]);
 
   const handleExportExcel = async () => {
     setIsExporting(true);
@@ -140,6 +147,17 @@ const DashboardPanel = () => {
     }
     return matchSearch && matchFilter;
   });
+
+  // --- LOGIKA PAGINATION ---
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredParticipants.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
+  const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10">
@@ -232,13 +250,7 @@ const DashboardPanel = () => {
         ))}
       </div>
 
-      {/* --- DASHBOARD CHARTS SECTION --- */}
-      {/* Menampilkan grafik hanya jika data sudah berhasil dimuat */}
-      {!loading && (
-        <div className="animate-in fade-in duration-1000">
-          <DashboardCharts participants={participants} />
-        </div>
-      )}
+      {!loading && <DashboardCharts participants={participants} />}
 
       {/* FILTER & SEARCH BOX */}
       <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
@@ -278,7 +290,6 @@ const DashboardPanel = () => {
           </div>
         </div>
 
-        {/* CATEGORY CHIPS */}
         <div className="flex flex-wrap gap-2">
           {["5K Run", "3K Walk", "Presale", "Early Bird", "Regular"].map(
             (chip) => (
@@ -347,13 +358,13 @@ const DashboardPanel = () => {
                   </td>
                 </tr>
               ) : (
-                filteredParticipants.map((p, idx) => (
+                currentItems.map((p, idx) => (
                   <tr
                     key={p._id}
                     className="hover:bg-slate-50/80 transition-all group"
                   >
                     <td className="px-8 py-6 text-xs font-bold text-slate-300 group-hover:text-slate-900 text-center">
-                      {String(idx + 1).padStart(2, "0")}
+                      {String(indexOfFirstItem + idx + 1).padStart(2, "0")}
                     </td>
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-4">
@@ -432,6 +443,55 @@ const DashboardPanel = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* --- PAGINATION CONTROLS --- */}
+        <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Halaman {currentPage} dari {totalPages || 1} (
+            {filteredParticipants.length} Peserta)
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => paginate(currentPage - 1)}
+              disabled={currentPage === 1 || loading}
+              className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-slate-600 transition-all shadow-sm"
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <div className="flex gap-1">
+              {[...Array(totalPages)].map((_, i) => {
+                // Tampilkan hanya 3 halaman di sekitar halaman aktif jika total halaman banyak
+                if (totalPages > 5 && Math.abs(i + 1 - currentPage) > 2)
+                  return null;
+                return (
+                  <button
+                    key={i}
+                    onClick={() => paginate(i + 1)}
+                    className={`w-10 h-10 rounded-xl text-xs font-black transition-all ${
+                      currentPage === i + 1
+                        ? "bg-slate-900 text-white shadow-lg"
+                        : "bg-white text-slate-400 border border-slate-100 hover:bg-slate-50"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => paginate(currentPage + 1)}
+              disabled={
+                currentPage === totalPages || totalPages === 0 || loading
+              }
+              className="p-2 bg-white border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-slate-600 transition-all shadow-sm"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
