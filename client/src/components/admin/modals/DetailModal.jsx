@@ -152,10 +152,10 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     <>
       <AlertModal {...alertConfig} />
 
-      {/* POP-UP LIGHTBOX BUKTI TRANSFER (Full Screen Over Everything) */}
+      {/* LIGHTBOX POPUP BUKTI BAYAR (Z-10001) */}
       {showImageLightbox && (
         <div
-          className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in"
+          className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[10001] flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 animate-fade-in"
           onClick={() => setShowImageLightbox(false)}
         >
           <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
@@ -164,17 +164,18 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           <img
             src={getProofUrl(participant.paymentProof)}
             alt="Bukti"
-            className="max-w-full max-h-[85vh] rounded-lg shadow-2xl animate-zoom-in"
+            className="max-w-full max-h-[85vh] rounded-lg shadow-2xl animate-zoom-in object-contain"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
 
-      {/* FIX: Gunakan 'fixed inset-0' untuk menutupi seluruh layar tanpa terpengaruh padding parent */}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4">
-        {/* CONTAINER UTAMA (Max-width dikurangi agar modal lebih kecil/compact) */}
+      {/* OVERLAY MODAL UTAMA (Z-9999) */}
+      {/* Perbaikan: Menggunakan w-screen h-screen dan top-0 left-0 untuk paksa full layar */}
+      <div className="fixed top-0 left-0 w-screen h-screen z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-8">
+        {/* CONTAINER MODAL (Dikecilkan ukurannya agar lebih compact) */}
         <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
-          {/* SIDEBAR (300px lebih ramping) */}
+          {/* SIDEBAR */}
           <div className="w-full md:w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-5">
               <div className="relative">
@@ -217,7 +218,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   <img
                     src={getProofUrl(participant.paymentProof)}
                     alt="Transfer"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-2 backdrop-blur-[2px]">
                     <Maximize2 size={20} />
@@ -238,14 +239,14 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           </div>
 
           {/* MAIN CONTENT */}
-          <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
-            {/* Header internal untuk tombol close agar bar putih di atas hilang */}
+          <div className="flex-1 flex flex-col bg-white overflow-hidden">
+            {/* Header internal dengan tombol close */}
             <div className="flex justify-end p-4 border-b border-slate-50 bg-white">
               <button
                 onClick={onClose}
                 className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-all"
               >
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>
 
@@ -313,7 +314,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-500 flex items-center gap-2">
                     <HeartPulse size={14} /> Medical
                   </h4>
-                  <p className="text-xs font-bold leading-relaxed mb-3">
+                  <p className="text-xs font-bold leading-relaxed mb-3 break-words">
                     {participant.medicalHistory || "TIDAK ADA"}
                   </p>
                   <span className="text-[9px] bg-white/10 px-2 py-1 rounded text-red-400 font-bold border border-white/10">
@@ -325,7 +326,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-600 flex items-center gap-2">
                     <Phone size={14} /> Emergency
                   </h4>
-                  <p className="text-sm font-black text-slate-900">
+                  <p className="text-sm font-black text-slate-900 break-words">
                     {participant.emergencyContact?.name || "-"}
                   </p>
                   <p className="text-xs font-bold text-red-600 mb-1">
@@ -342,7 +343,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900"
               >
                 Kembali
               </button>
