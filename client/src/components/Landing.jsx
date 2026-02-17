@@ -76,7 +76,7 @@ const LandingPage = () => {
 
   const getPhaseDescription = (name) => {
     const n = name?.toLowerCase() || "";
-    if (n.includes("presale")) return "Februari 2026";
+    if (n.includes("presale")) return "23 - 27 Februari 2026";
     if (n.includes("early")) return "2 - 9 Maret 2026";
     if (n.includes("regular")) return "16 Mar - 5 Apr 2026";
     return "";
