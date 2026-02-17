@@ -25,6 +25,7 @@ import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 // ... imports (React, QRCodeCanvas, dll tetap sama)
 
 // --- KOMPONEN TIKET PREMIUM (KHUSUS PDF) ---
+// --- KOMPONEN TIKET PREMIUM (KHUSUS PDF) ---
 const PrintableTicket = React.forwardRef(({ data }, ref) => {
   if (!data) return null;
 
@@ -34,217 +35,148 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
       style={{
         width: "800px",
         background: "#ffffff",
-        fontFamily: "'Times New Roman', serif", // Font Serif untuk kesan Heritage/Mahal
+        fontFamily: "Helvetica, Arial, sans-serif", // Konsisten dengan email
         position: "relative",
-        color: "#000",
+        color: "#0F172A",
       }}
     >
       {/* 1. TOP ACCENT BAR */}
       <div
-        style={{ height: "12px", background: "#DC2626", width: "100%" }}
+        style={{ height: "15px", background: "#DC2626", width: "100%" }}
       ></div>
 
-      <div style={{ padding: "60px 50px" }}>
-        {/* 2. HEADER: Minimalist Elegant */}
+      <div style={{ padding: "50px" }}>
+        {/* 2. HEADER */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <h1
             style={{
-              fontSize: "42px",
-              letterSpacing: "4px",
-              margin: "0 0 10px 0",
+              fontSize: "38px",
+              fontWeight: "900",
+              margin: "0",
               textTransform: "uppercase",
-              color: "#0F172A",
+              letterSpacing: "2px",
             }}
           >
-            Surabaya Heritage Run
+            SURABAYA <span style={{ color: "#DC2626" }}>HERITAGE</span> RUN
           </h1>
           <p
             style={{
-              fontSize: "14px",
-              color: "#DC2626",
-              letterSpacing: "3px",
+              fontSize: "12px",
+              color: "#64748B",
+              letterSpacing: "4px",
               textTransform: "uppercase",
-              fontWeight: "bold",
-              fontFamily: "Helvetica, Arial, sans-serif",
+              marginTop: "5px",
             }}
           >
-            Official Race Entry Pass
+            Official Race Entry Pass 2026
           </p>
         </div>
 
-        {/* 3. QR CODE: CENTERPIECE (BESAR) */}
-        {/* Dibuat sangat besar dan di tengah sesuai request */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: "40px",
-            padding: "20px",
-          }}
-        >
+        {/* 3. WELCOME MESSAGE */}
+        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+          <h2 style={{ fontSize: "24px", fontWeight: "800", margin: "0" }}>
+            Halo, {data.fullName}!
+          </h2>
           <div
             style={{
-              border: "1px solid #e2e8f0",
-              padding: "15px",
-              borderRadius: "4px",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.05)", // Soft shadow (html2canvas support)
+              display: "inline-block",
+              background: "#DCFCE7",
+              color: "#16A34A",
+              padding: "5px 15px",
+              borderRadius: "20px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              marginTop: "10px",
             }}
           >
-            <QRCodeCanvas
-              value={data._id}
-              size={280} // UKURAN BESAR
-              bgColor={"#ffffff"}
-              fgColor={"#000000"}
-              level={"H"} // High Error Correction
-              includeMargin={false}
-            />
+            PEMBAYARAN TELAH DIVERIFIKASI / LUNAS
           </div>
         </div>
 
-        {/* 4. ID PESERTA (Kecil di bawah QR) */}
+        {/* 4. TICKET BOX (GRID STYLE) */}
         <div
           style={{
-            textAlign: "center",
-            marginBottom: "50px",
-            fontFamily: "monospace",
-            color: "#64748B",
-            fontSize: "14px",
+            border: "2px solid #E2E8F0",
+            borderRadius: "16px",
+            overflow: "hidden",
           }}
         >
-          ID TIKET: {data._id}
-        </div>
-
-        {/* 5. MAIN INFO (Nama & Kategori) */}
-        <div
-          style={{
-            borderTop: "2px solid #000",
-            borderBottom: "2px solid #000",
-            padding: "30px 0",
-            marginBottom: "40px",
-          }}
-        >
+          {/* Box Header */}
           <div
             style={{
+              background: "#F8FAFC",
+              padding: "20px",
+              borderBottom: "1px dashed #CBD5E1",
               display: "flex",
               justifyContent: "space-between",
-              alignItems: "center",
             }}
           >
-            <div style={{ flex: 2 }}>
-              <p
-                style={{
-                  margin: "0 0 5px 0",
-                  fontSize: "12px",
-                  fontFamily: "Helvetica, Arial, sans-serif",
-                  color: "#64748B",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                }}
-              >
-                Nama Peserta
-              </p>
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: "42px",
-                  textTransform: "uppercase",
-                  lineHeight: "1",
-                }}
-              >
-                {data.fullName}
-              </h2>
-            </div>
-            <div style={{ flex: 1, textAlign: "right" }}>
-              <p
-                style={{
-                  margin: "0 0 5px 0",
-                  fontSize: "12px",
-                  fontFamily: "Helvetica, Arial, sans-serif",
-                  color: "#64748B",
-                  textTransform: "uppercase",
-                  letterSpacing: "1px",
-                }}
-              >
-                Kategori
-              </p>
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: "56px",
-                  color: "#DC2626",
-                  lineHeight: "1",
-                }}
-              >
-                {data.category}
-              </h2>
-            </div>
-          </div>
-        </div>
-
-        {/* 6. TECHNICAL DETAILS GRID */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "30px",
-            fontFamily: "Helvetica, Arial, sans-serif",
-          }}
-        >
-          {/* Kolom 1: BIB & Jersey */}
-          <div>
-            <div style={{ marginBottom: "25px" }}>
-              <p
-                style={{
-                  fontSize: "10px",
-                  fontWeight: "bold",
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  marginBottom: "5px",
-                }}
-              >
-                NOMOR BIB
-              </p>
-              <p
-                style={{ fontSize: "28px", fontWeight: "bold", color: "#000" }}
-              >
-                {data.bibNumber || "-"}
-              </p>
-            </div>
             <div>
               <p
                 style={{
                   fontSize: "10px",
+                  color: "#64748B",
                   fontWeight: "bold",
-                  color: "#94a3b8",
                   textTransform: "uppercase",
-                  marginBottom: "5px",
                 }}
               >
-                UKURAN JERSEY
+                Kategori
               </p>
               <p
-                style={{ fontSize: "24px", fontWeight: "bold", color: "#000" }}
+                style={{
+                  fontSize: "20px",
+                  color: "#DC2626",
+                  fontWeight: "900",
+                }}
               >
-                {data.jerseySize}
+                {data.category} RUN
+              </p>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#64748B",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                }}
+              >
+                Nomor BIB
+              </p>
+              <p
+                style={{
+                  fontSize: "24px",
+                  color: "#0F172A",
+                  fontWeight: "900",
+                }}
+              >
+                #{data.bibNumber || "---"}
               </p>
             </div>
           </div>
 
-          {/* Kolom 2: Waktu */}
-          <div>
-            <div style={{ marginBottom: "25px" }}>
+          {/* Box Body (Info Grid) */}
+          <div
+            style={{
+              padding: "30px",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "25px",
+              borderBottom: "1px dashed #CBD5E1",
+            }}
+          >
+            <div>
               <p
                 style={{
                   fontSize: "10px",
+                  color: "#94A3B8",
                   fontWeight: "bold",
-                  color: "#94a3b8",
                   textTransform: "uppercase",
-                  marginBottom: "5px",
                 }}
               >
-                TANGGAL
+                Hari & Tanggal
               </p>
-              <p style={{ fontSize: "18px", fontWeight: "600", color: "#000" }}>
+              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
                 Minggu, 24 Mei 2026
               </p>
             </div>
@@ -252,89 +184,140 @@ const PrintableTicket = React.forwardRef(({ data }, ref) => {
               <p
                 style={{
                   fontSize: "10px",
+                  color: "#94A3B8",
                   fontWeight: "bold",
-                  color: "#94a3b8",
                   textTransform: "uppercase",
-                  marginBottom: "5px",
                 }}
               >
-                WAKTU START
+                Flag Off
               </p>
-              <p style={{ fontSize: "18px", fontWeight: "600", color: "#000" }}>
-                06:00 WIB (Tepat)
+              <p style={{ fontSize: "16px", fontWeight: "bold" }}>06.00 WIB</p>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#94A3B8",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                }}
+              >
+                Tempat (Venue)
+              </p>
+              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+                Plaza Internatio
+              </p>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#94A3B8",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                }}
+              >
+                Start / Finish
+              </p>
+              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+                Jl. Garuda, Surabaya
+              </p>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#94A3B8",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                }}
+              >
+                Ukuran Jersey
+              </p>
+              <p style={{ fontSize: "16px", fontWeight: "bold" }}>
+                {data.jerseySize}
+              </p>
+            </div>
+            <div>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#94A3B8",
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                }}
+              >
+                Status Tiket
+              </p>
+              <p
+                style={{
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color: "#16A34A",
+                }}
+              >
+                PAID / VALID
               </p>
             </div>
           </div>
 
-          {/* Kolom 3: Lokasi & Status */}
-          <div>
-            <div style={{ marginBottom: "25px" }}>
-              <p
-                style={{
-                  fontSize: "10px",
-                  fontWeight: "bold",
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  marginBottom: "5px",
-                }}
-              >
-                LOKASI
-              </p>
-              <p style={{ fontSize: "18px", fontWeight: "600", color: "#000" }}>
-                Plaza Internatio
-              </p>
-              <p style={{ fontSize: "12px", color: "#64748B" }}>
-                Jl. Garuda, Surabaya
-              </p>
-            </div>
+          {/* QR Code Section (Centered) */}
+          <div
+            style={{
+              textAlign: "center",
+              padding: "40px 0",
+              background: "#ffffff",
+            }}
+          >
             <div
               style={{
-                border: "2px solid #16A34A",
-                padding: "10px",
-                textAlign: "center",
                 display: "inline-block",
+                padding: "15px",
+                border: "3px solid #0F172A",
+                borderRadius: "20px",
               }}
             >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  color: "#16A34A",
-                  letterSpacing: "2px",
-                }}
-              >
-                LUNAS / PAID
-              </p>
+              <QRCodeCanvas value={data._id} size={200} level="H" />
             </div>
+            <p
+              style={{
+                marginTop: "15px",
+                fontWeight: "800",
+                color: "#0F172A",
+                fontSize: "16px",
+              }}
+            >
+              SCAN SAAT PENGAMBILAN RACE PACK
+            </p>
+            <p
+              style={{
+                color: "#94A3B8",
+                fontSize: "11px",
+                fontFamily: "monospace",
+              }}
+            >
+              ID: {data._id}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* 7. BOTTOM BAR */}
+      {/* 5. FOOTER */}
       <div
         style={{
           background: "#0F172A",
-          color: "white",
-          padding: "20px 50px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          fontFamily: "Helvetica, Arial, sans-serif",
+          padding: "25px",
+          textAlign: "center",
+          color: "#94A3B8",
         }}
       >
-        <p style={{ margin: 0, fontSize: "12px", opacity: 0.7 }}>
-          Harap tunjukkan QR Code ini di meja registrasi ulang.
+        <p style={{ margin: 0, fontSize: "12px" }}>
+          Harap membawa kartu identitas (KTP) asli saat registrasi ulang.
         </p>
         <p
-          style={{
-            margin: 0,
-            fontSize: "12px",
-            fontWeight: "bold",
-            letterSpacing: "1px",
-          }}
+          style={{ margin: "5px 0 0 0", fontSize: "10px", fontWeight: "bold" }}
         >
-          SURABAYAHERITAGERUN.COM
+          WWW.SURABAYAHERITAGERUN.COM
         </p>
       </div>
     </div>
@@ -401,24 +384,32 @@ const CheckStatusPage = () => {
     setDownloading(true);
 
     try {
+      // Memberi waktu sedikit agar QR Code ter-render sempurna
       await new Promise((resolve) => setTimeout(resolve, 500));
+
       const canvas = await html2canvas(printRef.current, {
-        scale: 2,
-        useCORS: true,
+        scale: 3, // SKALA 3 membuat PDF sangat tajam saat di-print
+        useCORS: true, // Penting jika ada gambar dari domain lain
+        logging: false,
         backgroundColor: "#ffffff",
       });
-      const imgData = canvas.toDataURL("image/jpeg", 0.9);
+
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
       const pdf = new jsPDF("p", "mm", "a4");
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      const margin = 10;
-      const imgWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      // Hitung rasio agar pas di kertas A4
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      pdf.addImage(imgData, "JPEG", margin, 20, imgWidth, imgHeight);
-      pdf.save(`SHR_Ticket_${result.fullName.replace(/\s+/g, "_")}.pdf`);
+      // Tambahkan gambar ke PDF (Center posisi)
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, imgHeight);
+      pdf.save(`Tiket_SHR_${result.fullName.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
-      alert("Gagal download PDF.");
+      console.error("PDF Error:", err);
+      alert("Gagal mengunduh PDF. Silakan coba lagi.");
     } finally {
       setDownloading(false);
     }
