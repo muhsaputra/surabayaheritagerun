@@ -19,6 +19,7 @@ exports.confirmPayment = async (req, res) => {
   try {
     const { id } = req.body;
 
+    // 1. Cari peserta
     const participantCheck = await Participant.findById(id);
     if (!participantCheck) {
       return res
@@ -26,45 +27,62 @@ exports.confirmPayment = async (req, res) => {
         .json({ success: false, message: "Peserta tidak ditemukan" });
     }
 
+    // 2. Cegah verifikasi ganda
     if (participantCheck.paymentStatus === "paid") {
       return res.status(400).json({
         success: false,
-        message: "Peserta ini sudah lunas sebelumnya.",
+        message: "Peserta ini sudah berstatus LUNAS.",
       });
     }
 
-    // --- LOGIKA GENERATE NOMOR BIB OTOMATIS ---
+    // 3. LOGIKA GENERATE NOMOR BIB
+    // Menghitung jumlah yang sudah lunas untuk kategori tersebut
     const baseNumber = participantCheck.category === "5K" ? 50100 : 30100;
     const countPaid = await Participant.countDocuments({
       category: participantCheck.category,
       paymentStatus: "paid",
     });
 
-    const bibNumber = String(baseNumber + countPaid);
+    const bibNumber = String(baseNumber + countPaid + 1);
 
+    // 4. UPDATE DATABASE (Proses Utama)
     const participant = await Participant.findByIdAndUpdate(
       id,
-      { paymentStatus: "paid", bibNumber: bibNumber },
+      {
+        paymentStatus: "paid",
+        bibNumber: bibNumber,
+        verifiedAt: new Date(), // Tambahan untuk tracking waktu verifikasi
+      },
       { new: true },
     );
 
-    // --- KIRIM EMAIL TIKET ---
-    try {
-      await sendTicketEmail(participant);
-      console.log(
-        `📧 Email tiket (#${bibNumber}) terkirim ke ${participant.email}`,
-      );
-    } catch (emailError) {
-      console.error("❌ Gagal kirim email:", emailError);
-    }
+    // 5. KIRIM EMAIL (ASINKRON - BACKGROUND PROCESS)
+    // Kita tidak menggunakan 'await' di sini agar respon API ke admin instan
+    sendTicketEmail(participant)
+      .then(() => {
+        console.log(`📧 Tiket #${bibNumber} terkirim ke ${participant.email}`);
+      })
+      .catch((emailError) => {
+        // Jika email gagal, data di DB tetap aman (Lunas).
+        // Admin bisa kirim ulang nanti jika perlu.
+        console.error(
+          `❌ Gagal kirim email ke ${participant.email}:`,
+          emailError.message,
+        );
+      });
 
-    res.json({
+    // 6. RESPON INSTAN KE ADMIN
+    // Admin tidak perlu menunggu proses pengiriman email selesai
+    return res.status(200).json({
       success: true,
       bibNumber: bibNumber,
-      message: `Pembayaran diverifikasi. Nomor BIB: ${bibNumber}`,
+      message: `Verifikasi Berhasil! BIB #${bibNumber} telah dibuat.`,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Error pada confirmPayment:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Terjadi kesalahan pada server." });
   }
 };
 
