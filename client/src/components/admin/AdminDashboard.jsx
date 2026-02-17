@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { Users } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react"; // Import ikon tambahan
 
 import Sidebar from "./Sidebar";
 import DashboardPanel from "./panels/DashboardPanel";
@@ -17,6 +17,7 @@ const AdminDashboard = () => {
   const [scanResult, setScanResult] = useState(null);
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [resumeScan, setResumeScan] = useState(null);
+  const [isExporting, setIsExporting] = useState(false); // State untuk loading export
 
   const [alertConfig, setAlertConfig] = useState({
     isOpen: false,
@@ -27,7 +28,6 @@ const AdminDashboard = () => {
     onCancel: null,
   });
 
-  // URL API Utama (Pastikan tidak ada '/' di akhir)
   const API_URL =
     import.meta.env.VITE_API_URL ||
     "https://bumpy-charleen-muhsaputra-1d494e9b.koyeb.app";
@@ -36,20 +36,14 @@ const AdminDashboard = () => {
 
   // --- 1. GLOBAL AXIOS CONFIGURATION ---
   useEffect(() => {
-    // Interceptor untuk menyisipkan Token dan memaksakan Base URL
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem("adminToken");
-
-        // Sisipkan Token Bearer untuk melewati proteksi middleware
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
-
-        // Aktifkan kredensial untuk cookie lintas domain
         config.withCredentials = true;
 
-        // PROTEKSI: Jika request masih mengarah ke localhost, arahkan ke Koyeb
         if (
           config.url &&
           (config.url.startsWith("http://localhost") ||
@@ -71,6 +65,49 @@ const AdminDashboard = () => {
     document.title = "Admin Dashboard | Surabaya Heritage Run";
   }, []);
 
+  // --- 2. FUNGSI EXPORT EXCEL (Sesuai Update Baru) ---
+  const handleExportExcel = async () => {
+    setIsExporting(true);
+    try {
+      // Menggunakan token admin untuk otorisasi download
+      const token = localStorage.getItem("adminToken");
+
+      // Cara paling aman mendownload file dengan token: menggunakan axios blob
+      const response = await axios({
+        url: `${API_URL}/api/admin/export-excel`,
+        method: "GET",
+        responseType: "blob", // Penting untuk data biner seperti Excel
+      });
+
+      // Membuat URL temporary untuk download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `SHR_Participants_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export Error:", error);
+      setAlertConfig({
+        isOpen: true,
+        type: "error",
+        title: "Export Gagal",
+        message: "Terjadi kesalahan saat mengunduh data excel.",
+        confirmText: "Tutup",
+        onConfirm: closeAlert,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleLogoutProcess = () => {
     setAlertConfig({
       isOpen: true,
@@ -81,9 +118,7 @@ const AdminDashboard = () => {
       cancelText: "Batal",
       onCancel: closeAlert,
       onConfirm: () => {
-        localStorage.removeItem("isAdminAuthenticated");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("adminData");
+        localStorage.clear(); // Bersihkan semua sekaligus
         navigate("/login");
       },
     });
@@ -92,9 +127,7 @@ const AdminDashboard = () => {
   const processScanResult = async (id, resumeFunc) => {
     setResumeScan(() => resumeFunc);
     try {
-      // Pemanggilan API kini otomatis diarahkan ke Koyeb oleh interceptor
       const res = await axios.get(`${API_URL}/api/admin/participants`);
-
       if (res.data.success) {
         const found = res.data.data.find((p) => p._id === id);
         if (found) {
@@ -115,9 +148,7 @@ const AdminDashboard = () => {
         }
       }
     } catch (error) {
-      console.error("🔥 Scan Error:", error);
       const isUnauthorized = error.response?.status === 401;
-
       setAlertConfig({
         isOpen: true,
         type: "error",
@@ -129,8 +160,7 @@ const AdminDashboard = () => {
         onConfirm: () => {
           closeAlert();
           if (isUnauthorized) {
-            localStorage.removeItem("isAdminAuthenticated");
-            localStorage.removeItem("adminToken");
+            localStorage.clear();
             navigate("/login");
           } else if (resumeFunc) {
             resumeFunc();
@@ -149,25 +179,56 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-slate-50 font-sans relative">
       <AlertModal {...alertConfig} />
+
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogout={handleLogoutProcess}
       />
+
       <div className="md:ml-64 p-6 md:p-10 transition-all">
-        <div className="md:hidden flex justify-between items-center mb-6 bg-slate-900 text-white p-4 rounded-xl shadow-lg">
-          <h1 className="font-serif font-bold text-lg">Admin Panel</h1>
+        {/* TOP BAR / HEADER DASHBOARD */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+              {activeTab === "dashboard"
+                ? "Overview Peserta"
+                : activeTab.toUpperCase()}
+            </h1>
+            <p className="text-slate-500 text-sm italic">
+              Surabaya Heritage Run 2026
+            </p>
+          </div>
+
+          {/* TOMBOL EXCEL GLOBAL (Hanya muncul di dashboard) */}
+          {activeTab === "dashboard" && (
+            <button
+              onClick={handleExportExcel}
+              disabled={isExporting}
+              className="flex items-center gap-2 px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold shadow-lg shadow-green-600/20 transition-all disabled:opacity-50"
+            >
+              {isExporting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <FileDown size={18} />
+              )}
+              {isExporting ? "Mengekspor..." : "Export Data (Excel)"}
+            </button>
+          )}
         </div>
 
-        {activeTab === "settings" ? (
-          <SettingsPanel />
-        ) : activeTab === "scan" ? (
-          <ScannerPanel onScanSuccess={processScanResult} />
-        ) : activeTab === "logs" ? (
-          <LogPanel />
-        ) : (
-          <DashboardPanel />
-        )}
+        {/* RENDER PANEL BERDASARKAN TAB */}
+        <div className="animate-in fade-in duration-500">
+          {activeTab === "settings" ? (
+            <SettingsPanel />
+          ) : activeTab === "scan" ? (
+            <ScannerPanel onScanSuccess={processScanResult} />
+          ) : activeTab === "logs" ? (
+            <LogPanel />
+          ) : (
+            <DashboardPanel />
+          )}
+        </div>
       </div>
 
       {isScanModalOpen && scanResult && (
