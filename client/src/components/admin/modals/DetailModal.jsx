@@ -152,51 +152,53 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     <>
       <AlertModal {...alertConfig} />
 
-      {/* LIGHTBOX POPUP UNTUK BUKTI PEMBAYARAN */}
+      {/* LIGHTBOX POPUP BUKTI BAYAR */}
       {showImageLightbox && (
         <div
-          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/95 backdrop-blur-md p-4 animate-fade-in"
+          className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in"
           onClick={() => setShowImageLightbox(false)}
         >
-          <button className="absolute top-6 right-6 text-white hover:rotate-90 transition-transform">
-            <X size={32} />
+          <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors">
+            <X size={40} />
           </button>
           <img
             src={getProofUrl(participant.paymentProof)}
-            alt="Bukti Bayar Full"
-            className="max-w-full max-h-full rounded-lg shadow-2xl animate-zoom-in"
+            alt="Bukti"
+            className="max-w-full max-h-[85vh] rounded-lg shadow-2xl animate-zoom-in"
             onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
 
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in">
-        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row animate-slide-up">
+      {/* OVERLAY MODAL */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-6 md:p-10 overflow-hidden">
+        {/* CONTAINER UTAMA - Hilangkan border-white/20 untuk fix bar putih */}
+        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
           {/* SIDEBAR */}
-          <div className="w-full md:w-[300px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto">
+          <div className="w-full md:w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-5">
               <div className="relative">
-                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center font-serif text-4xl font-bold shadow-xl">
+                <div className="w-20 h-20 rounded-[1.8rem] bg-slate-900 text-white flex items-center justify-center font-serif text-3xl font-bold shadow-xl">
                   {participant.fullName.charAt(0)}
                 </div>
                 <div
-                  className={`absolute -bottom-1 -right-1 p-2 rounded-xl ${participant.paymentStatus === "paid" ? "bg-green-500" : "bg-red-500"} text-white shadow-lg`}
+                  className={`absolute -bottom-1 -right-1 p-1.5 rounded-lg ${participant.paymentStatus === "paid" ? "bg-green-500" : "bg-red-500"} text-white shadow-lg`}
                 >
-                  <BadgeCheck size={18} />
+                  <BadgeCheck size={16} />
                 </div>
               </div>
             </div>
 
             <div className="text-center mb-6">
-              <h2 className="text-xl font-black text-slate-900 leading-tight mb-2 uppercase tracking-tight break-words">
+              <h2 className="text-lg font-black text-slate-900 leading-tight mb-2 uppercase tracking-tight break-words">
                 {participant.fullName}
               </h2>
               <div className="flex flex-wrap justify-center gap-1.5">
-                <span className="px-3 py-1 bg-slate-900 text-white text-[9px] font-black rounded-lg uppercase tracking-widest">
+                <span className="px-3 py-1 bg-slate-900 text-white text-[8px] font-black rounded-lg uppercase tracking-widest">
                   {participant.category}
                 </span>
                 <span
-                  className={`px-3 py-1 text-[9px] font-black rounded-lg uppercase tracking-widest ${participant.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                  className={`px-3 py-1 text-[8px] font-black rounded-lg uppercase tracking-widest ${participant.paymentStatus === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
                 >
                   {participant.paymentStatus === "paid" ? "LUNAS" : "PENDING"}
                 </span>
@@ -209,25 +211,25 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
               </h4>
               {participant.paymentProof ? (
                 <div
-                  className="group relative rounded-[1.5rem] overflow-hidden border-2 border-white shadow-lg aspect-[4/5] bg-slate-200 cursor-pointer"
+                  className="group relative rounded-[1.2rem] overflow-hidden border-2 border-white shadow-md aspect-[4/5] bg-slate-200 cursor-pointer"
                   onClick={() => setShowImageLightbox(true)}
                 >
                   <img
                     src={getProofUrl(participant.paymentProof)}
                     alt="Transfer"
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-2 backdrop-blur-[2px]">
-                    <Maximize2 size={24} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
+                    <Maximize2 size={20} />
+                    <span className="text-[9px] font-black uppercase">
                       Zoom Foto
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="h-48 rounded-[1.5rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center p-6 bg-white/50">
-                  <ImageIcon size={32} className="mb-2 opacity-20" />
-                  <p className="text-[9px] font-bold uppercase tracking-widest">
+                <div className="h-40 rounded-[1.2rem] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-center p-4 bg-white/50">
+                  <ImageIcon size={28} className="mb-1 opacity-20" />
+                  <p className="text-[8px] font-bold uppercase tracking-widest">
                     No Proof
                   </p>
                 </div>
@@ -236,27 +238,30 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           </div>
 
           {/* MAIN CONTENT */}
-          <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
-            <button
-              onClick={onClose}
-              className="absolute top-6 right-6 p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-all z-10"
-            >
-              <X size={24} />
-            </button>
+          <div className="flex-1 flex flex-col bg-white overflow-hidden">
+            {/* Header Close Button agar tidak melayang di atas whitespace */}
+            <div className="flex justify-end p-4 border-b border-slate-50 bg-white">
+              <button
+                onClick={onClose}
+                className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
 
-            <div className="p-6 md:p-10 overflow-y-auto flex-1 custom-scrollbar">
+            <div className="p-6 md:p-8 overflow-y-auto flex-1 custom-scrollbar">
               <div className="mb-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-[9px] font-black uppercase tracking-[0.2em] mb-5">
-                  <User size={12} /> Personal Info
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] mb-4">
+                  <User size={12} /> Data Personal
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   <DetailItem
-                    label="NIK / Identitas"
+                    label="NIK"
                     value={participant.nik}
                     icon={Fingerprint}
                   />
                   <DetailItem
-                    label="Email Peserta"
+                    label="Email"
                     value={participant.email}
                     icon={Mail}
                   />
@@ -266,7 +271,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                     icon={Phone}
                   />
                   <DetailItem
-                    label="BIB Number"
+                    label="BIB"
                     value={
                       participant.bibNumber
                         ? `#${participant.bibNumber}`
@@ -299,98 +304,72 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 </div>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-6 mb-2">
-                {/* MEDICAL */}
-                <div className="p-6 bg-slate-900 rounded-[2rem] text-white relative overflow-hidden shadow-xl border border-slate-800">
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="p-6 bg-slate-900 rounded-[1.5rem] text-white relative overflow-hidden shadow-xl">
                   <ShieldAlert
-                    size={100}
-                    className="absolute -right-8 -bottom-8 opacity-5 text-red-500"
+                    size={80}
+                    className="absolute -right-6 -bottom-6 opacity-5 text-red-500"
                   />
-                  <h4 className="text-[9px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 text-red-500">
-                    <HeartPulse size={16} /> Medical
+                  <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-500 flex items-center gap-2">
+                    <HeartPulse size={14} /> Medical
                   </h4>
-                  <div className="space-y-4 relative z-10">
-                    <div>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mb-1">
-                        Riwayat & Alergi
-                      </p>
-                      <p className="text-sm font-bold leading-relaxed break-words">
-                        {participant.medicalHistory || "TIDAK ADA"}
-                      </p>
-                    </div>
-                    <div className="inline-block px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-                      <p className="text-[9px] text-slate-500 font-bold uppercase">
-                        Gol Darah
-                      </p>
-                      <p className="text-lg font-black text-red-500">
-                        {participant.bloodType || "-"}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-xs font-bold leading-relaxed mb-3">
+                    {participant.medicalHistory || "TIDAK ADA"}
+                  </p>
+                  <span className="text-[9px] bg-white/10 px-2 py-1 rounded text-red-400 font-bold border border-white/10">
+                    Gol: {participant.bloodType || "-"}
+                  </span>
                 </div>
 
-                {/* EMERGENCY */}
-                <div className="p-6 bg-red-50 rounded-[2rem] border border-red-100 shadow-md">
-                  <h4 className="text-[9px] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 text-red-600">
-                    <Phone size={16} /> Emergency
+                <div className="p-6 bg-red-50 rounded-[1.5rem] border border-red-100 shadow-sm">
+                  <h4 className="text-[9px] font-black uppercase tracking-widest mb-3 text-red-600 flex items-center gap-2">
+                    <Phone size={14} /> Emergency
                   </h4>
-                  <div className="space-y-4">
-                    <div className="flex flex-col">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">
-                        Nama
-                      </p>
-                      <span className="text-lg font-black text-slate-900 break-words leading-tight">
-                        {participant.emergencyContact?.name || "-"}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">
-                        Telepon
-                      </p>
-                      <span className="text-base font-black text-red-600">
-                        {participant.emergencyContact?.phone || "-"}
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-sm font-black text-slate-900">
+                    {participant.emergencyContact?.name || "-"}
+                  </p>
+                  <p className="text-xs font-bold text-red-600 mb-1">
+                    {participant.emergencyContact?.phone || "-"}
+                  </p>
+                  <p className="text-[9px] text-slate-400 uppercase">
+                    {participant.emergencyContact?.relation || "-"}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* ACTION BAR */}
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
+                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900"
               >
                 Kembali
               </button>
-
               {participant.paymentStatus !== "paid" && (
                 <button
                   onClick={() =>
                     handleManualConfirm(participant._id, participant.fullName)
                   }
-                  className="px-8 py-3.5 bg-red-600 text-white rounded-2xl text-xs font-black shadow-lg shadow-red-200 hover:bg-red-700 transition-all flex items-center gap-2"
+                  className="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black shadow-lg shadow-red-200 hover:bg-red-700 transition-all flex items-center gap-2"
                 >
-                  <BadgeCheck size={18} /> VERIFIKASI LUNAS
+                  <BadgeCheck size={16} /> VERIFIKASI
                 </button>
               )}
-
               {participant.paymentStatus === "paid" &&
                 !participant.isCheckedIn && (
                   <button
                     onClick={() =>
                       handleCheckIn(participant._id, participant.fullName)
                     }
-                    className="px-8 py-3.5 bg-slate-900 text-white rounded-2xl text-xs font-black shadow-lg shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-slate-900 text-white rounded-xl text-xs font-black shadow-lg shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
                   >
-                    <CheckCircle size={18} /> KONFIRMASI HADIR
+                    <CheckCircle size={16} /> KONFIRMASI HADIR
                   </button>
                 )}
-
               {participant.isCheckedIn && (
-                <div className="px-8 py-3.5 bg-green-100 text-green-700 rounded-2xl text-xs font-black flex items-center gap-2 border border-green-200">
-                  <CheckCircle size={18} /> HADIR
+                <div className="px-6 py-3 bg-green-100 text-green-700 rounded-xl text-xs font-black border border-green-200 flex items-center gap-2">
+                  <CheckCircle size={16} /> SUDAH HADIR
                 </div>
               )}
             </div>
@@ -399,13 +378,10 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
       </div>
 
       <style>{`
-        @keyframes zoom-in {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
-        }
-        .animate-zoom-in {
-          animation: zoom-in 0.2s ease-out forwards;
-        }
+        @keyframes zoom-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .animate-zoom-in { animation: zoom-in 0.2s ease-out forwards; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
       `}</style>
     </>
   );
