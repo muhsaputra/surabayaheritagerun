@@ -3,11 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
-const connectDB = require("./config/db");
+// PENYESUAIAN 1: Path naik satu tingkat (../) karena file ini sekarang di dalam /api
+const connectDB = require("../config/db");
 const path = require("path");
 
-const adminRoutes = require("./routes/adminRoutes");
-const apiRoutes = require("./routes/apiRoutes");
+const adminRoutes = require("../routes/adminRoutes");
+const apiRoutes = require("../routes/apiRoutes");
 
 const app = express();
 
@@ -15,7 +16,7 @@ const app = express();
 connectDB();
 
 // ==========================================
-// 1. RATE LIMITER (KEAMANAN NANO INSTANCE)
+// 1. RATE LIMITER (KEAMANAN NANO INSTANCE & VERCEL)
 // ==========================================
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -50,7 +51,6 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-// Konfigurasi CORS yang lebih eksplisit untuk menangani Pre-flight (OPTIONS)
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -69,7 +69,7 @@ app.use(
       "X-Requested-With",
       "Accept",
     ],
-    optionsSuccessStatus: 204, // Penting untuk kompabilitas browser lama/mobile
+    optionsSuccessStatus: 204,
   }),
 );
 
@@ -78,8 +78,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Folder static
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// PENYESUAIAN 2: Folder static di Serverless
+// Catatan: Vercel tidak bisa menyimpan file permanen di folder /uploads.
+// Pastikan upload Anda menggunakan Cloudinary.
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ==========================================
 // 3. ROUTING
@@ -89,7 +91,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api", apiRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API Surabaya Heritage Run 2026 - Online 🏃💨");
+  res.send("API Surabaya Heritage Run 2026 - Online & Scalable on Vercel 🏃💨");
 });
 
 // ==========================================
@@ -103,8 +105,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 8000; // Koyeb biasanya menyukai port 8000 atau 8080
-app.listen(PORT, "0.0.0.0", () => {
-  // "0.0.0.0" wajib agar bisa diakses dari luar Koyeb
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+// PENYESUAIAN 3: Kondisi untuk Local vs Vercel
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 8000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Local Server running on port ${PORT}`);
+  });
+}
+
+// WAJIB: Export app untuk Vercel Serverless
+module.exports = app;
