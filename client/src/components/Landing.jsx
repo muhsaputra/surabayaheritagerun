@@ -18,6 +18,7 @@ import {
   Flame,
   Users,
   Lock,
+  Loader2,
 } from "lucide-react";
 
 // Pastikan file fisik di folder Anda benar-benar menggunakan ekstensi ini (.png/.jpg/.JPG)
@@ -42,7 +43,6 @@ const LandingPage = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        // Menggunakan Environment Variable agar jalan di Vercel & Koyeb
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
         const res = await axios.get(`${apiUrl}/api/landing/config`);
 
@@ -68,10 +68,18 @@ const LandingPage = () => {
   };
 
   const getTimelineIcon = (name) => {
-    const n = name.toLowerCase();
+    const n = name?.toLowerCase() || "";
     if (n.includes("presale")) return <Flame size={28} />;
     if (n.includes("early")) return <Sprout size={28} />;
     return <CalendarRange size={28} />;
+  };
+
+  const getPhaseDescription = (name) => {
+    const n = name?.toLowerCase() || "";
+    if (n.includes("presale")) return "Februari 2026";
+    if (n.includes("early")) return "2 - 9 Maret 2026";
+    if (n.includes("regular")) return "16 Mar - 5 Apr 2026";
+    return "";
   };
 
   const galleryImages = [
@@ -92,9 +100,6 @@ const LandingPage = () => {
           <img
             src={heroImage}
             alt="Surabaya Heritage Run Hero"
-            fetchPriority="high"
-            loading="eager"
-            decoding="sync"
             className="w-full h-full object-cover object-center"
           />
         </div>
@@ -185,105 +190,119 @@ const LandingPage = () => {
       </div>
 
       {/* --- TIMELINE SECTION --- */}
-      {/* --- POTONGAN KODE TIMELINE SECTION --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {timelineData.phases.map((phase, index) => {
-          const isActive = index === timelineData.activePhaseIndex;
-          const isPassed = index < timelineData.activePhaseIndex;
-          const isUpcoming = index > timelineData.activePhaseIndex;
+      <div className="px-4 mx-auto max-w-6xl mb-24">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b-2 border-slate-200 pb-4">
+          <div>
+            <span className="text-red-600 font-bold tracking-widest uppercase text-sm">
+              Timeline
+            </span>
+            <h2 className="text-4xl font-serif font-bold text-slate-900 mt-2">
+              Jadwal Pendaftaran
+            </h2>
+          </div>
+          <div className="hidden md:block text-slate-400 font-medium">
+            Amankan slot sebelum habis!
+          </div>
+        </div>
 
-          // --- PENAMBAHAN LOGIKA DESKRIPSI MANUAL ---
-          const getPhaseDescription = (name) => {
-            const n = name.toLowerCase();
-            if (n.includes("presale")) return "Februari 2026";
-            if (n.includes("early")) return "2 - 9 Maret 2026";
-            if (n.includes("regular")) return "16 Mar - 5 Apr 2026";
-            return "";
-          };
+        {loadingTimeline ? (
+          <div className="text-center py-20 flex flex-col items-center justify-center gap-4">
+            <Loader2 className="animate-spin text-red-600" size={40} />
+            <p className="text-slate-500 font-medium">
+              Memuat jadwal terbaru...
+            </p>
+          </div>
+        ) : !timelineData || !timelineData.phases ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
+            <p className="text-slate-500">Jadwal pendaftaran belum tersedia.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {timelineData.phases.map((phase, index) => {
+              const isActive = index === timelineData.activePhaseIndex;
+              const isPassed = index < timelineData.activePhaseIndex;
+              const isUpcoming = index > timelineData.activePhaseIndex;
 
-          const limit5K = phase.limits["5K"] || 0;
-          const limit3K = phase.limits["3K"] || 0;
-          const totalQuota = limit5K + limit3K;
-          const totalSisa = timelineData.remaining?.totalSisa || 0;
+              const limit5K = phase.limits?.["5K"] || 0;
+              const limit3K = phase.limits?.["3K"] || 0;
+              const totalQuota = limit5K + limit3K;
+              const totalSisa = timelineData.remaining?.totalSisa || 0;
 
-          let percentageLeft =
-            totalQuota > 0 ? (totalSisa / totalQuota) * 100 : 0;
-          if (percentageLeft > 100) percentageLeft = 100;
-          if (percentageLeft < 0) percentageLeft = 0;
+              let percentageLeft =
+                totalQuota > 0 ? (totalSisa / totalQuota) * 100 : 0;
+              if (percentageLeft > 100) percentageLeft = 100;
+              if (percentageLeft < 0) percentageLeft = 0;
 
-          const isSoldOut = isActive && totalSisa === 0;
+              const isSoldOut = isActive && totalSisa === 0;
 
-          return (
-            <div
-              key={index}
-              className={`
-          relative p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between min-h-[300px]
-          ${
-            isActive
-              ? "bg-slate-900 text-white shadow-2xl scale-[1.02] border-slate-900 z-10 ring-4 ring-slate-100"
-              : isPassed
-                ? "bg-slate-50 text-slate-400 border-slate-200 grayscale opacity-80"
-                : "bg-white text-slate-900 border-slate-200 hover:border-red-200 hover:shadow-lg"
-          }
-        `}
-            >
-              <div>
-                <div className="flex justify-between items-start mb-6">
-                  <div
-                    className={`p-3 rounded-xl transition-colors ${isActive ? "bg-white/10 text-red-500" : "bg-slate-100 text-slate-400"}`}
-                  >
-                    {getTimelineIcon(phase.name)}
+              return (
+                <div
+                  key={index}
+                  className={`relative p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between min-h-[300px]
+                  ${
+                    isActive
+                      ? "bg-slate-900 text-white shadow-2xl scale-[1.02] border-slate-900 z-10 ring-4 ring-slate-100"
+                      : isPassed
+                        ? "bg-slate-50 text-slate-400 border-slate-200 grayscale opacity-80"
+                        : "bg-white text-slate-900 border-slate-200 hover:border-red-200 hover:shadow-lg"
+                  }`}
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-6">
+                      <div
+                        className={`p-3 rounded-xl transition-colors ${isActive ? "bg-white/10 text-red-500" : "bg-slate-100 text-slate-400"}`}
+                      >
+                        {getTimelineIcon(phase.name)}
+                      </div>
+                      {isActive && (
+                        <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg shadow-red-600/40">
+                          Sedang Dibuka
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="font-bold text-2xl mb-1">{phase.name}</h3>
+
+                    <div
+                      className={`inline-block px-3 py-1 rounded-lg mb-4 text-xs font-bold ${isActive ? "bg-red-600/20 text-red-400" : "bg-slate-100 text-slate-500"}`}
+                    >
+                      {getPhaseDescription(phase.name)}
+                    </div>
                   </div>
-                  {isActive && (
-                    <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg shadow-red-600/40">
-                      Sedang Dibuka
-                    </span>
+
+                  {isActive ? (
+                    <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
+                          <Users size={14} className="text-red-500" /> Sisa Slot
+                        </span>
+                        <span
+                          className={`text-xl font-black ${totalSisa < 10 ? "text-red-500" : "text-white"}`}
+                        >
+                          {isSoldOut ? "HABIS" : totalSisa}
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-1000 ${percentageLeft < 20 ? "bg-red-600" : "bg-green-500"}`}
+                          style={{ width: `${percentageLeft}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 pt-4 border-t border-slate-100/10">
+                      <p className="text-xs text-slate-400">
+                        {isPassed
+                          ? "Pendaftaran fase ini telah ditutup."
+                          : "Menunggu giliran fase ini dibuka."}
+                      </p>
+                    </div>
                   )}
                 </div>
-
-                <h3 className="font-bold text-2xl mb-1">{phase.name}</h3>
-
-                {/* INFORMASI TANGGAL YANG DIUPDATE */}
-                <div
-                  className={`inline-block px-3 py-1 rounded-lg mb-4 text-xs font-bold ${isActive ? "bg-red-600/20 text-red-400" : "bg-slate-100 text-slate-500"}`}
-                >
-                  {getPhaseDescription(phase.name)}
-                </div>
-              </div>
-
-              {/* ... Sisa kode Quota bar (Sama seperti sebelumnya) ... */}
-              {isActive ? (
-                <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                  {/* ... bagian sisa slot ... */}
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
-                      <Users size={14} className="text-red-500" /> Sisa Slot
-                    </span>
-                    <span
-                      className={`text-xl font-black ${totalSisa < 10 ? "text-red-500" : "text-white"}`}
-                    >
-                      {isSoldOut ? "HABIS" : totalSisa}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-1000 ${percentageLeft < 20 ? "bg-red-600" : "bg-green-500"}`}
-                      style={{ width: `${percentageLeft}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-4 pt-4 border-t border-slate-100/10">
-                  <p className="text-xs text-slate-400">
-                    {isPassed
-                      ? "Pendaftaran fase ini telah ditutup."
-                      : "Menunggu giliran fase ini dibuka."}
-                  </p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* --- KATEGORI LARI --- */}
@@ -314,7 +333,6 @@ const LandingPage = () => {
 
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row justify-center gap-8">
-            {/* 5K CARD */}
             <div className="bg-white p-2 rounded-[2.5rem] flex-1 shadow-2xl hover:scale-105 transition-transform duration-300">
               <div className="bg-slate-50 p-8 rounded-[2rem] h-full flex flex-col border border-slate-100">
                 <div className="mb-6">
@@ -326,27 +344,6 @@ const LandingPage = () => {
                 <p className="text-slate-500 font-bold tracking-widest uppercase mb-8">
                   Heritage Run
                 </p>
-
-                <ul className="space-y-4 mb-10 flex-1">
-                  {[
-                    "Jersey Heritage Exclusive",
-                    "All Finisher Medal",
-                    "BIB Number (Non-Chip)",
-                    "String Bag",
-                  ].map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-3 text-sm font-medium text-slate-700"
-                    >
-                      <CheckCircle
-                        size={18}
-                        className="text-red-600 flex-shrink-0"
-                      />{" "}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
                 <div className="border-t border-slate-200 pt-6">
                   <p className="text-slate-400 text-xs mb-1">
                     Biaya Pendaftaran
@@ -359,7 +356,7 @@ const LandingPage = () => {
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-4 bg-red-600 text-white font-bold text-lg rounded-xl hover:bg-red-700 shadow-lg shadow-red-600/30 transition-all flex justify-center items-center gap-2"
+                    className="w-full py-4 bg-red-600 text-white font-bold text-lg rounded-xl hover:bg-red-700 transition-all flex justify-center items-center gap-2"
                   >
                     Daftar 5K <ArrowRight size={20} />
                   </button>
@@ -367,7 +364,6 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* 3K CARD */}
             <div className="bg-white p-2 rounded-[2.5rem] flex-1 shadow-xl hover:scale-105 transition-transform duration-300">
               <div className="bg-white p-8 rounded-[2rem] h-full flex flex-col">
                 <div className="mb-6">
@@ -379,27 +375,6 @@ const LandingPage = () => {
                 <p className="text-slate-500 font-bold tracking-widest uppercase mb-8">
                   Fun Walk
                 </p>
-
-                <ul className="space-y-4 mb-10 flex-1">
-                  {[
-                    "Jersey Heritage Exclusive",
-                    "All Finisher Medal",
-                    "BIB Number (Non-Chip)",
-                    "String Bag",
-                  ].map((item, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center gap-3 text-sm font-medium text-slate-600"
-                    >
-                      <CheckCircle
-                        size={18}
-                        className="text-slate-400 flex-shrink-0"
-                      />{" "}
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
                 <div className="border-t border-slate-100 pt-6">
                   <p className="text-slate-400 text-xs mb-1">
                     Biaya Pendaftaran
@@ -420,20 +395,9 @@ const LandingPage = () => {
               </div>
             </div>
           </div>
-
-          <div className="mt-12 text-center bg-white/5 rounded-xl p-4 border border-white/10 max-w-2xl mx-auto backdrop-blur-sm">
-            <p className="text-gray-300 text-sm flex items-center justify-center gap-2">
-              <Info size={16} className="text-red-500" />
-              <span className="opacity-80">
-                Catatan: Fasilitas Race Pack SAMA untuk kategori 5K maupun 3K.
-                Tidak ada sistem COT (Cut Off Time).
-              </span>
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* --- GALLERY --- */}
       <div className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -441,10 +405,6 @@ const LandingPage = () => {
               Jejak <span className="text-red-600">Langkah</span>
             </h2>
             <div className="w-20 h-1 bg-red-600 mx-auto"></div>
-            <p className="text-slate-500 mt-6 max-w-xl mx-auto">
-              Galeri kemeriahan event tahun lalu. Tahun ini giliranmu membuat
-              sejarah.
-            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[250px]">
             {galleryImages.map((src, idx) => (
@@ -455,60 +415,8 @@ const LandingPage = () => {
                 <img
                   src={src}
                   alt={`Galeri ${idx}`}
-                  loading="lazy"
-                  decoding="async"
                   className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-110"
                 />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* --- IMPORTANT INFO --- */}
-      <div className="max-w-6xl mx-auto px-4 my-24">
-        <div className="bg-slate-50 rounded-[3rem] p-10 md:p-16 border border-slate-200">
-          <h2 className="text-3xl font-serif font-bold text-center text-slate-900 mb-12 flex items-center justify-center gap-3">
-            <FileText className="text-red-600" /> Informasi Penting
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                icon: <CheckCircle />,
-                title: "Non-Timing Chip",
-                desc: "Event ini bersifat Fun Run. BIB tidak dilengkapi chip waktu.",
-              },
-              {
-                icon: <Trophy />,
-                title: "No Cut Off Time",
-                desc: "Semua finisher berhak mendapatkan medali.",
-              },
-              {
-                icon: <Ban />,
-                title: "Non-Refundable",
-                desc: "Tiket tidak dapat dikembalikan tanpa alasan force majeure.",
-              },
-              {
-                icon: <UserCheck />,
-                title: "Race Pack Collection",
-                desc: "Wajib membawa KTP & Bukti Email saat pengambilan.",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex gap-6 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-red-200 transition-all group"
-              >
-                <div className="text-slate-400 group-hover:text-red-600 transition-colors mt-1">
-                  {React.cloneElement(item.icon, { size: 32 })}
-                </div>
-                <div>
-                  <h4 className="font-bold text-lg text-slate-900 mb-2">
-                    {item.title}
-                  </h4>
-                  <p className="text-slate-500 text-sm leading-relaxed">
-                    {item.desc}
-                  </p>
-                </div>
               </div>
             ))}
           </div>
