@@ -19,7 +19,7 @@ const Sidebar = ({ activeTab, setActiveTab, onLogout }) => {
     <div className="w-64 bg-slate-900 text-white min-h-screen flex flex-col fixed left-0 top-0 z-50 shadow-2xl hidden md:flex border-r border-slate-800">
       <div className="p-8 border-b border-slate-800">
         <h2 className="text-2xl font-serif font-bold tracking-tight">
-          Admin<span className="text-red-600 italic">Panel</span>
+          Admin<span className="text-red-600 italic">Panels</span>
         </h2>
         <p className="text-xs text-slate-400 mt-1">
           Surabaya Heritage Run 2026
