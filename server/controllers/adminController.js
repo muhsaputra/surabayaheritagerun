@@ -73,104 +73,136 @@ exports.exportExcel = async (req, res) => {
   try {
     const participants = await Participant.find().sort({ createdAt: -1 });
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Daftar Peserta");
+    const worksheet = workbook.addWorksheet("Database Peserta");
 
-    // 1. BRANDING HEADER
+    // --- 1. SET HEADER BRANDING (Dibuat Lebih Mewah) ---
     worksheet.mergeCells("A1:L1");
-    const titleRow = worksheet.getRow(1);
-    titleRow.values = ["DAFTAR PESERTA SURABAYA HERITAGE RUN 2026"];
-    titleRow.font = {
-      name: "Arial Black",
-      size: 16,
+    const mainTitle = worksheet.getCell("A1");
+    mainTitle.value = "OFFICIAL DATABASE: SURABAYA HERITAGE RUN 2026";
+    mainTitle.font = {
+      name: "Segoe UI",
+      size: 18,
+      bold: true,
       color: { argb: "FFFFFFFF" },
     };
-    titleRow.alignment = { vertical: "middle", horizontal: "center" };
-    titleRow.fill = {
+    mainTitle.alignment = { vertical: "middle", horizontal: "center" };
+    mainTitle.fill = {
       type: "pattern",
       pattern: "solid",
       fgColor: { argb: "FFDC2626" },
-    }; // Merah Heritage
-    titleRow.height = 35;
+    };
 
     worksheet.mergeCells("A2:L2");
-    const subTitleRow = worksheet.getRow(2);
-    subTitleRow.values = [`Data Ekspor: ${new Date().toLocaleString("id-ID")}`];
-    subTitleRow.font = { italic: true, size: 10 };
-    subTitleRow.alignment = { horizontal: "center" };
+    const subTitle = worksheet.getCell("A2");
+    subTitle.value = `Laporan Real-time Pendaftaran | Dicetak pada: ${new Date().toLocaleString("id-ID")}`;
+    subTitle.font = { name: "Segoe UI", size: 10, italic: true };
+    subTitle.alignment = { vertical: "middle", horizontal: "center" };
 
-    // 2. DEFINISI KOLOM
+    // --- 2. DEFINISI STRUKTUR KOLOM & LEBAR ---
     worksheet.columns = [
       { header: "BIB", key: "bibNumber", width: 12 },
-      { header: "Nama Lengkap", key: "fullName", width: 30 },
-      { header: "Kategori", key: "category", width: 12 },
-      { header: "Jersey", key: "jerseySize", width: 10 },
-      { header: "Email", key: "email", width: 30 },
-      { header: "No. WhatsApp", key: "whatsapp", width: 20 },
-      { header: "Gender", key: "gender", width: 12 },
-      { header: "Gol. Darah", key: "bloodType", width: 12 },
-      { header: "Kontak Darurat", key: "emergencyContact", width: 20 },
-      { header: "Fase", key: "registrationPhase", width: 15 },
-      { header: "Status", key: "paymentStatus", width: 12 },
-      { header: "Waktu Daftar", key: "createdAt", width: 25 },
+      { header: "NAMA LENGKAP", key: "fullName", width: 35 },
+      { header: "KATEGORI", key: "category", width: 15 },
+      { header: "UKURAN", key: "jerseySize", width: 10 },
+      { header: "WHATSAPP", key: "whatsapp", width: 20 },
+      { header: "EMAIL", key: "email", width: 35 },
+      { header: "GENDER", key: "gender", width: 12 },
+      { header: "GOL. DARAH", key: "bloodType", width: 12 },
+      { header: "KONTAK DARURAT", key: "emergencyContact", width: 25 },
+      { header: "STATUS", key: "paymentStatus", width: 15 },
+      { header: "FASE", key: "registrationPhase", width: 15 },
+      { header: "WAKTU DAFTAR", key: "createdAt", width: 25 },
     ];
 
-    // 3. STYLING HEADER TABEL
+    // --- 3. STYLING HEADER TABEL (UX: Sticky & Bold) ---
     const headerRow = worksheet.getRow(3);
+    headerRow.height = 25;
     headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.font = {
+        name: "Segoe UI",
+        bold: true,
+        color: { argb: "FFFFFFFF" },
+        size: 11,
+      };
       cell.fill = {
         type: "pattern",
         pattern: "solid",
         fgColor: { argb: "FF0F172A" },
-      }; // Biru Tua
-      cell.alignment = { horizontal: "center" };
+      };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
       cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
+        top: { style: "medium", color: { argb: "FFDC2626" } },
+        bottom: { style: "medium" },
       };
     });
 
-    // 4. INSERT DATA
-    participants.forEach((p) => {
+    // --- 4. INSERT DATA & ROW STYLING ---
+    participants.forEach((p, index) => {
       const row = worksheet.addRow({
-        bibNumber: p.bibNumber || "PENDING",
-        fullName: p.fullName,
+        bibNumber: p.bibNumber || "---",
+        fullName: p.fullName.toUpperCase(),
         category: p.category,
         jerseySize: p.jerseySize,
-        email: p.email,
         whatsapp: p.whatsapp,
+        email: p.email,
         gender: p.gender || "-",
         bloodType: p.bloodType || "-",
         emergencyContact: p.emergencyContact || "-",
+        paymentStatus: p.paymentStatus === "paid" ? "✅ LUNAS" : "⏳ PENDING",
         registrationPhase: p.registrationPhase || "Regular",
-        paymentStatus: p.paymentStatus === "paid" ? "LUNAS" : "BELUM BAYAR",
         createdAt: new Date(p.createdAt).toLocaleString("id-ID"),
       });
 
-      // Zebra striping & border
+      row.height = 20;
+
+      // UX: Zebra Crossing (Warna baris selang-seling agar tidak pusing membacanya)
+      if (index % 2 === 0) {
+        row.eachCell((cell) => {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "FFF8FAFC" },
+          };
+        });
+      }
+
+      // Styling Alignment per kolom
+      row.getCell("bibNumber").alignment = { horizontal: "center" };
+      row.getCell("category").alignment = { horizontal: "center" };
+      row.getCell("jerseySize").alignment = { horizontal: "center" };
+      row.getCell("gender").alignment = { horizontal: "center" };
+      row.getCell("bloodType").alignment = { horizontal: "center" };
+      row.getCell("paymentStatus").alignment = { horizontal: "center" };
+
+      // Tambahkan Border Tipis di setiap sel data
       row.eachCell((cell) => {
+        cell.font = { name: "Segoe UI", size: 10 };
         cell.border = {
           bottom: { style: "thin", color: { argb: "FFE2E8F0" } },
+          right: { style: "thin", color: { argb: "FFE2E8F0" } },
         };
-        cell.alignment = { vertical: "middle" };
       });
     });
 
-    // 5. SEND TO CLIENT
+    // --- 5. FINISHING ---
+    // Freeze Panes (Header tetap terlihat meski scroll ke bawah)
+    worksheet.views = [
+      { state: "frozen", xSplit: 0, ySplit: 3, activeCell: "A4" },
+    ];
+
     res.setHeader(
       "Content-Type",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=Data_Peserta_SHR2026.xlsx",
+      "attachment; filename=Database_Peserta_SHR2026.xlsx",
     );
 
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
+    console.error("Export Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
