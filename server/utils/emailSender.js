@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 exports.sendTicketEmail = async (participant) => {
   try {
-    // 1. Generate QR Code dengan kualitas tinggi
+    // 1. Generate QR Code
     const qrCodeDataURL = await QRCode.toDataURL(participant._id.toString(), {
       errorCorrectionLevel: "H",
       margin: 1,
@@ -25,18 +25,13 @@ exports.sendTicketEmail = async (participant) => {
     });
     const base64Data = qrCodeDataURL.split(",")[1];
 
-    // Format Data
-    const formattedPrice = new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(participant.pricePaid);
+    // Data Statis Event
+    const eventDayDate = "Minggu, 24 Mei 2026";
+    const flagOffTime = "06.00 WIB";
+    const venueName = "Plaza Internatio";
+    const startFinishLocation = "Jl. Garuda, Surabaya";
 
-    const eventDate = "Minggu, 12 Oktober 2026";
-    const startTime = participant.category === "5K" ? "05:30 WIB" : "06:00 WIB";
-    const venue = "Balai Kota Surabaya";
-
-    // 2. TEMPLATE HTML (MODERN SWISS DESIGN)
+    // 2. TEMPLATE HTML
     const emailContent = `
       <!DOCTYPE html>
       <html>
@@ -47,33 +42,27 @@ exports.sendTicketEmail = async (participant) => {
           body { margin: 0; padding: 0; background-color: #F1F5F9; font-family: 'Inter', Arial, sans-serif; }
           .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
           
-          /* HEADER */
           .header { background-color: #0F172A; padding: 40px 20px; text-align: center; border-bottom: 5px solid #DC2626; }
           .header h1 { margin: 0; color: #ffffff; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
           .header p { margin: 5px 0 0; color: #94A3B8; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
 
-          /* CONTENT */
           .content { padding: 30px; }
           .user-greeting { text-align: center; margin-bottom: 25px; }
           .user-greeting h2 { color: #0F172A; margin: 0; font-size: 24px; font-weight: 800; }
           .status-badge { display: inline-block; background-color: #DCFCE7; color: #16A34A; padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700; margin-top: 8px; }
 
-          /* TICKET BOX */
           .ticket-card { border: 2px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
           .ticket-head { background-color: #F8FAFC; padding: 15px 20px; border-bottom: 1px dashed #CBD5E1; }
           
-          /* GRID INFO */
           .info-table { width: 100%; padding: 20px; border-bottom: 1px dashed #CBD5E1; }
           .label { font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-          .value { font-size: 16px; color: #0F172A; font-weight: 700; display: block; margin-top: 2px; }
+          .value { font-size: 15px; color: #0F172A; font-weight: 700; display: block; margin-top: 2px; }
           .value-red { color: #DC2626; font-size: 22px; }
 
-          /* QR SECTION */
           .qr-section { text-align: center; padding: 30px 20px; background-color: #ffffff; }
           .qr-wrapper { display: inline-block; padding: 15px; border: 3px solid #0F172A; border-radius: 16px; background: #ffffff; }
           .qr-img { width: 200px; height: 200px; }
 
-          /* FOOTER */
           .footer { background-color: #0F172A; padding: 25px; text-align: center; color: #94A3B8; font-size: 11px; }
         </style>
       </head>
@@ -87,8 +76,8 @@ exports.sendTicketEmail = async (participant) => {
           <div class="content">
             <div class="user-greeting">
               <h2>Halo, ${participant.fullName}!</h2>
-              <div class="status-badge">KONFIRMASI PEMBAYARAN BERHASIL</div>
-              <p style="color: #64748B; font-size: 14px; margin-top: 10px;">Tiket Anda telah aktif. Sampai jumpa di garis start!</p>
+              <div class="status-badge">PEMBAYARAN TELAH DIVERIFIKASI</div>
+              <p style="color: #64748B; font-size: 14px; margin-top: 10px;">Siapkan diri Anda untuk menelusuri sejarah Surabaya!</p>
             </div>
 
             <div class="ticket-card">
@@ -103,23 +92,33 @@ exports.sendTicketEmail = async (participant) => {
 
               <table class="info-table">
                 <tr>
-                  <td width="50%" style="padding-bottom: 15px;">
-                    <span class="label">TANGGAL</span>
-                    <span class="value">${eventDate}</span>
+                  <td width="55%" style="padding-bottom: 15px;">
+                    <span class="label">HARI & TANGGAL</span>
+                    <span class="value">${eventDayDate}</span>
                   </td>
-                  <td width="50%" style="padding-bottom: 15px;">
-                    <span class="label">WAKTU START</span>
-                    <span class="value">${startTime}</span>
+                  <td width="45%" style="padding-bottom: 15px;">
+                    <span class="label">FLAG OFF</span>
+                    <span class="value">${flagOffTime}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom: 15px;">
+                    <span class="label">TEMPAT (VENUE)</span>
+                    <span class="value">${venueName}</span>
+                  </td>
+                  <td style="padding-bottom: 15px;">
+                    <span class="label">START / FINISH</span>
+                    <span class="value">${startFinishLocation}</span>
                   </td>
                 </tr>
                 <tr>
                   <td>
-                    <span class="label">LOKASI</span>
-                    <span class="value">${venue}</span>
-                  </td>
-                  <td>
                     <span class="label">UKURAN JERSEY</span>
                     <span class="value">${participant.jerseySize}</span>
+                  </td>
+                  <td>
+                    <span class="label">STATUS TIKET</span>
+                    <span class="value" style="color: #16A34A;">PAID / LUNAS</span>
                   </td>
                 </tr>
               </table>
@@ -128,21 +127,15 @@ exports.sendTicketEmail = async (participant) => {
                 <div class="qr-wrapper">
                   <img src="cid:qrcode_ticket" alt="QR Code" class="qr-img" />
                 </div>
-                <p style="margin-top: 15px; font-weight: 700; color: #0F172A; font-size: 14px;">SCAN SAAT PENGAMBILAN RPC</p>
+                <p style="margin-top: 15px; font-weight: 700; color: #0F172A; font-size: 14px;">SCAN SAAT PENGAMBILAN RACE PACK</p>
                 <p style="color: #94A3B8; font-size: 10px;">ID: ${participant._id}</p>
               </div>
-            </div>
-
-            <div style="margin-top: 20px; text-align: center; border: 1px solid #E2E8F0; padding: 15px; border-radius: 8px;">
-               <p style="margin: 0; font-size: 12px; color: #475569;">
-                 <strong>Catatan:</strong> Harap membawa kartu identitas (KTP) asli saat melakukan registrasi ulang di lokasi.
-               </p>
             </div>
           </div>
 
           <div class="footer">
             <p>&copy; 2026 Surabaya Heritage Run. All rights reserved.</p>
-            <p>Jaga kesehatan dan persiapkan fisik Anda untuk pengalaman lari sejarah terbaik di Surabaya!</p>
+            <p>Mohon datang 30 menit sebelum Flag Off untuk pemanasan.</p>
           </div>
         </div>
       </body>
@@ -153,7 +146,7 @@ exports.sendTicketEmail = async (participant) => {
     const mailOptions = {
       from: `"Surabaya Heritage Run" <${process.env.EMAILSENDER}>`,
       to: participant.email,
-      subject: `[E-TICKET] ${participant.category} - ${participant.fullName} (#${participant.bibNumber})`,
+      subject: `[TIKET] ${participant.fullName} - ${participant.category} (#${participant.bibNumber})`,
       html: emailContent,
       attachments: [
         {
@@ -166,8 +159,8 @@ exports.sendTicketEmail = async (participant) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log("✅ E-Ticket terkirim ke:", participant.email);
+    console.log("✅ Email Tiket Terkirim!");
   } catch (error) {
-    console.error("❌ Gagal Mengirim Email Tiket:", error);
+    console.error("❌ Gagal Mengirim Email:", error);
   }
 };
