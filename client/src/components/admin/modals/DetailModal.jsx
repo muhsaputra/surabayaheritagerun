@@ -18,8 +18,8 @@ import {
   Shirt,
   Fingerprint,
   Maximize2,
-  Clock,
   AlertCircle,
+  Clock, // <--- Sudah ditambahkan di sini
 } from "lucide-react";
 import { getProofUrl } from "../utils/adminHelpers";
 
@@ -29,20 +29,18 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-  // --- FUNGSI VERIFIKASI PEMBAYARAN ---
   const handleVerifyPayment = async () => {
     const result = await Swal.fire({
       title: "Verifikasi Pembayaran?",
-      text: `Konfirmasi pembayaran manual untuk ${participant.fullName}? Nomor BIB akan digenerate otomatis.`,
+      text: `Konfirmasi pembayaran manual untuk ${participant.fullName}? Nomor BIB akan terbit otomatis.`,
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#0f172a", // Slate 900
-      cancelButtonColor: "#ef4444", // Red 600
+      confirmButtonColor: "#0f172a",
+      cancelButtonColor: "#ef4444",
       confirmButtonText: "Ya, Verifikasi Lunas",
       cancelButtonText: "Batal",
-      border: "none",
       customClass: {
-        popup: "rounded-[2rem]",
+        popup: "rounded-[2.5rem]",
         confirmButton:
           "rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest",
         cancelButton:
@@ -53,7 +51,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     if (result.isConfirmed) {
       setIsProcessing(true);
       Swal.fire({
-        title: "Sedang Memproses...",
+        title: "Memproses...",
         text: "Mengupdate database & mengirim email tiket",
         allowOutsideClick: false,
         didOpen: () => {
@@ -72,17 +70,18 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
         if (res.data.success) {
           await Swal.fire({
             title: "Berhasil!",
-            text: `BIB #${res.data.bibNumber} telah terbit. Email tiket telah dikirim.`,
+            text: `BIB #${res.data.bibNumber} telah terbit.`,
             icon: "success",
             confirmButtonColor: "#0f172a",
-            timer: 3000,
+            timer: 2000,
+            showConfirmButton: false,
           });
           onRefresh();
           onClose();
         }
       } catch (error) {
         Swal.fire({
-          title: "Gagal Verifikasi",
+          title: "Gagal!",
           text:
             error.response?.data?.message || "Terjadi kesalahan pada server.",
           icon: "error",
@@ -94,14 +93,13 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     }
   };
 
-  // --- FUNGSI CHECK-IN ---
   const handleCheckIn = async () => {
     const result = await Swal.fire({
-      title: "Konfirmasi Kehadiran",
-      text: `Tandai ${participant.fullName} sebagai hadir di lokasi?`,
+      title: "Konfirmasi Hadir",
+      text: `Tandai ${participant.fullName} sebagai hadir?`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#10b981", // Emerald 500
+      confirmButtonColor: "#10b981",
       confirmButtonText: "Ya, Hadir!",
       customClass: { popup: "rounded-[2rem]" },
     });
@@ -114,10 +112,8 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           { id: participant._id },
           { headers: { Authorization: `Bearer ${token}` } },
         );
-
         Swal.fire({
           title: "Sukses!",
-          text: "Peserta berhasil Check-in.",
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -135,7 +131,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
   const DetailItem = ({ label, value, isAlert, icon: Icon }) => (
     <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md transition-all">
       <div
-        className={`p-2 rounded-xl ${isAlert ? "bg-red-50 text-red-600" : "bg-white text-slate-400 shadow-sm border border-slate-50"}`}
+        className={`p-2 rounded-xl ${isAlert ? "bg-red-50 text-red-600" : "bg-white text-slate-400 shadow-sm"}`}
       >
         <Icon size={16} />
       </div>
@@ -154,7 +150,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
 
   const modalContent = (
     <>
-      {/* IMAGE LIGHTBOX */}
+      {/* LIGHTBOX */}
       {showImageLightbox && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-900/95 backdrop-blur-xl p-4 cursor-zoom-out"
@@ -163,7 +159,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           <img
             src={getProofUrl(participant.paymentProof)}
             className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain animate-in zoom-in duration-300"
-            alt="Bukti Transfer"
+            alt="Bukti"
           />
           <button className="absolute top-10 right-10 text-white/50 hover:text-white">
             <X size={32} />
@@ -171,14 +167,13 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
         </div>
       )}
 
-      {/* MAIN MODAL */}
+      {/* MODAL */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 overflow-hidden">
         <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
-          {/* SIDEBAR: PHOTO & PROOF */}
-          <div className="w-full md:w-[320px] bg-slate-50 border-r border-slate-100 p-8 flex flex-col overflow-y-auto no-scrollbar shrink-0">
+          <div className="w-full md:w-[320px] bg-slate-50 border-r border-slate-100 p-8 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-6">
               <div className="relative group">
-                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center text-4xl font-black shadow-2xl transition-transform group-hover:scale-105">
+                <div className="w-24 h-24 rounded-[2rem] bg-slate-900 text-white flex items-center justify-center text-4xl font-black shadow-2xl">
                   {participant.fullName.charAt(0)}
                 </div>
                 <div
@@ -187,7 +182,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   {participant.paymentStatus === "paid" ? (
                     <BadgeCheck size={20} />
                   ) : (
-                    <Clock size={20} />
+                    <Clock size={20} className="animate-pulse" />
                   )}
                 </div>
               </div>
@@ -242,7 +237,6 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             </div>
           </div>
 
-          {/* MAIN CONTENT */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
             <div className="flex justify-end p-6 border-b border-slate-50">
               <button
@@ -253,8 +247,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
               </button>
             </div>
 
-            <div className="p-8 overflow-y-auto flex-1 custom-scrollbar space-y-8">
-              {/* DATA SECTION */}
+            <div className="p-8 overflow-y-auto flex-1 space-y-8 custom-scrollbar">
               <section>
                 <div className="flex items-center gap-2 mb-6 text-slate-400">
                   <User size={18} />
@@ -312,12 +305,11 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 </div>
               </section>
 
-              {/* MEDICAL & EMERGENCY */}
               <div className="grid lg:grid-cols-2 gap-6">
                 <div className="p-6 bg-red-50 rounded-[2rem] border border-red-100 shadow-sm relative overflow-hidden group">
                   <ShieldAlert
                     size={100}
-                    className="absolute -right-8 -bottom-8 opacity-[0.03] text-red-600 group-hover:scale-110 transition-transform"
+                    className="absolute -right-8 -bottom-8 opacity-[0.03] text-red-600"
                   />
                   <div className="flex items-center gap-2 mb-4 text-red-600">
                     <AlertCircle size={18} />
@@ -353,7 +345,6 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
               </div>
             </div>
 
-            {/* ACTION FOOTER */}
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-4">
               <button
                 onClick={onClose}
@@ -389,7 +380,6 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
       `}</style>
     </>
   );
