@@ -17,6 +17,7 @@ router.post("/login", authController.login);
 
 // --- DASHBOARD & DATA PESERTA ---
 router.get("/participants", protect, adminController.getParticipants);
+router.get("/export-excel", adminController.exportExcel);
 
 // --- AKSI UTAMA (VERIFIKASI & CHECK-IN) ---
 router.post("/confirm-payment", protect, adminController.confirmPayment);
