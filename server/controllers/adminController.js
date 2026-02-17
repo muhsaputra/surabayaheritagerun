@@ -13,7 +13,7 @@ exports.getParticipants = async (req, res) => {
   }
 };
 
-// --- 2. KONFIRMASI PEMBAYARAN & KIRIM TIKET ---
+// --- 2. KONFIRMASI PEMBAYARAN & KIRIM TIKET (UPDATED BIB LOGIC) ---
 exports.confirmPayment = async (req, res) => {
   try {
     const { id } = req.body;
@@ -32,16 +32,25 @@ exports.confirmPayment = async (req, res) => {
       });
     }
 
-    // 1. Generate Nomor BIB (Format: KATEGORI + 00 + URUTAN)
-    // BIB Number tetap dihitung urut secara global (tidak per fase)
-    const count = await Participant.countDocuments({
+    // ==========================================
+    // LOGIKA GENERATE NOMOR BIB OTOMATIS
+    // ==========================================
+
+    // 1. Tentukan Angka Awal (Base Number)
+    const baseNumber = participantCheck.category === "5K" ? 50100 : 30100;
+
+    // 2. Hitung jumlah peserta yang sudah lunas (status: paid) di kategori yang sama
+    const countPaid = await Participant.countDocuments({
       category: participantCheck.category,
       paymentStatus: "paid",
     });
-    const bibPrefix = participantCheck.category === "5K" ? "5" : "3";
-    const bibNumber = `${bibPrefix}${String(count + 1).padStart(4, "0")}`;
 
-    // 2. Update Status & BIB
+    // 3. Generate BIB: Base Number + jumlah yang sudah ada
+    // Contoh: Jika 5K belum ada yang lunas -> 50100 + 0 = 50100
+    // Contoh: Jika 3K sudah ada 5 orang lunas -> 30100 + 5 = 30105
+    const bibNumber = String(baseNumber + countPaid);
+
+    // 4. Update Status & BIB ke Database
     const participant = await Participant.findByIdAndUpdate(
       id,
       {
@@ -51,17 +60,24 @@ exports.confirmPayment = async (req, res) => {
       { new: true },
     );
 
-    // 3. Kirim Email Tiket
+    // ==========================================
+    // KIRIM EMAIL TIKET
+    // ==========================================
     try {
+      // Pastikan sendTicketEmail sudah menggunakan data terbaru
       await sendTicketEmail(participant);
-      console.log(`📧 Email tiket terkirim ke ${participant.email}`);
+      console.log(
+        `📧 Email tiket (#${bibNumber}) terkirim ke ${participant.email}`,
+      );
     } catch (emailError) {
       console.error("❌ Gagal kirim email:", emailError);
+      // Tetap lanjutkan respon sukses meski email gagal (agar admin tidak bingung)
     }
 
     res.json({
       success: true,
-      message: "Pembayaran diverifikasi, BIB dibuat, & Email terkirim.",
+      bibNumber: bibNumber, // Kirim BIB ke frontend agar admin bisa lihat langsung
+      message: `Pembayaran diverifikasi. Nomor BIB: ${bibNumber}`,
     });
   } catch (error) {
     console.error("Confirm Payment Error:", error);
