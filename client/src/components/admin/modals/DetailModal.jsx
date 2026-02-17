@@ -152,7 +152,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
     <>
       <AlertModal {...alertConfig} />
 
-      {/* LIGHTBOX POPUP BUKTI BAYAR */}
+      {/* POP-UP LIGHTBOX BUKTI TRANSFER (Full Screen Over Everything) */}
       {showImageLightbox && (
         <div
           className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/95 backdrop-blur-xl p-4 animate-fade-in"
@@ -170,11 +170,11 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
         </div>
       )}
 
-      {/* OVERLAY MODAL */}
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-6 md:p-10 overflow-hidden">
-        {/* CONTAINER UTAMA - Hilangkan border-white/20 untuk fix bar putih */}
+      {/* FIX: Gunakan 'fixed inset-0' untuk menutupi seluruh layar tanpa terpengaruh padding parent */}
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/90 backdrop-blur-md p-4">
+        {/* CONTAINER UTAMA (Max-width dikurangi agar modal lebih kecil/compact) */}
         <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-slide-up">
-          {/* SIDEBAR */}
+          {/* SIDEBAR (300px lebih ramping) */}
           <div className="w-full md:w-[280px] bg-slate-50 border-r border-slate-100 p-6 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-5">
               <div className="relative">
@@ -217,7 +217,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   <img
                     src={getProofUrl(participant.paymentProof)}
                     alt="Transfer"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center text-white gap-2 backdrop-blur-[2px]">
                     <Maximize2 size={20} />
@@ -238,8 +238,8 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
           </div>
 
           {/* MAIN CONTENT */}
-          <div className="flex-1 flex flex-col bg-white overflow-hidden">
-            {/* Header Close Button agar tidak melayang di atas whitespace */}
+          <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
+            {/* Header internal untuk tombol close agar bar putih di atas hilang */}
             <div className="flex justify-end p-4 border-b border-slate-50 bg-white">
               <button
                 onClick={onClose}
@@ -305,7 +305,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
               </div>
 
               <div className="grid lg:grid-cols-2 gap-4">
-                <div className="p-6 bg-slate-900 rounded-[1.5rem] text-white relative overflow-hidden shadow-xl">
+                <div className="p-6 bg-slate-900 rounded-[1.5rem] text-white relative overflow-hidden shadow-xl border border-slate-800">
                   <ShieldAlert
                     size={80}
                     className="absolute -right-6 -bottom-6 opacity-5 text-red-500"
@@ -342,7 +342,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             <div className="p-5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900"
+                className="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all"
               >
                 Kembali
               </button>
@@ -353,7 +353,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                   }
                   className="px-6 py-3 bg-red-600 text-white rounded-xl text-xs font-black shadow-lg shadow-red-200 hover:bg-red-700 transition-all flex items-center gap-2"
                 >
-                  <BadgeCheck size={16} /> VERIFIKASI
+                  <BadgeCheck size={16} /> VERIFIKASI LUNAS
                 </button>
               )}
               {participant.paymentStatus === "paid" &&
