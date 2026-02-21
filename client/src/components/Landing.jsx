@@ -19,6 +19,7 @@ import {
   Users,
   Lock,
   Loader2,
+  Medal,
 } from "lucide-react";
 
 // Pastikan file fisik di folder Anda benar-benar menggunakan ekstensi ini (.png/.jpg/.JPG)
