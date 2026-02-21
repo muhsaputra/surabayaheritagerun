@@ -26,7 +26,7 @@ const storage = new CloudinaryStorage({
 // 3. Inisialisasi Multer dengan Filter & Limit
 const uploadCloud = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Maksimal 5MB
+  limits: { fileSize: 2 * 1024 * 1024 }, // Maksimal 5MB
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
