@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import QRCode from "qrcode"; // Pastikan sudah: npm install qrcode
+import QRCode from "qrcode"; // Wajib: npm install qrcode
 import { QRCodeCanvas } from "qrcode.react";
 import {
   Search,
@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
-// --- KOMPONEN TIKET PREMIUM (MAROON THEME) ---
+// --- KOMPONEN TIKET PREMIUM (PRINTABLE) ---
+// Komponen ini disembunyikan dari layar tapi di-render secara aktif untuk snapshot PDF
 const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
   if (!data) return null;
 
@@ -30,17 +31,21 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
     <div
       ref={ref}
       style={{
-        width: "794px",
+        width: "794px", // Lebar standar A4 (96 DPI)
         background: "#ffffff",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         position: "relative",
         color: "#0F172A",
+        paddingBottom: "40px",
       }}
     >
+      {/* 1. TOP ACCENT BAR */}
       <div
         style={{ height: "15px", background: "#9B1B1B", width: "100%" }}
       ></div>
+
       <div style={{ padding: "50px" }}>
+        {/* 2. HEADER */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <h1
             style={{
@@ -48,6 +53,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
               fontWeight: "900",
               margin: "0",
               textTransform: "uppercase",
+              letterSpacing: "2px",
               color: "#1B4D3E",
             }}
           >
@@ -67,6 +73,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
           </p>
         </div>
 
+        {/* 3. WELCOME MESSAGE */}
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
           <h2 style={{ fontSize: "28px", fontWeight: "800", margin: "0" }}>
             Halo, {data.fullName}!
@@ -89,6 +96,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
           </div>
         </div>
 
+        {/* 4. TICKET BOX */}
         <div
           style={{
             border: "2px solid #E2E8F0",
@@ -187,7 +195,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             ))}
           </div>
 
-          {/* QR CODE - GUNAKAN TAG IMG AGAR STABIL DI ANDROID */}
+          {/* QR CODE - DITERIMA SEBAGAI IMG TAG AGAR STABIL DI HP */}
           <div
             style={{
               textAlign: "center",
@@ -233,6 +241,16 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             >
               SCAN SAAT PENGAMBILAN RACE PACK
             </p>
+            <p
+              style={{
+                color: "#94A3B8",
+                fontSize: "10px",
+                fontFamily: "monospace",
+                marginTop: "10px",
+              }}
+            >
+              ID: {data._id}
+            </p>
           </div>
         </div>
       </div>
@@ -267,13 +285,37 @@ const CheckStatusPage = () => {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
   const [isTicketLoaded, setIsTicketLoaded] = useState(false);
-  const [qrDataUrl, setQrDataUrl] = useState(""); // State untuk menyimpan Base64 QR
+  const [qrDataUrl, setQrDataUrl] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const printRef = useRef(null);
+
+  useEffect(() => {
+    let autoEmail = location.state?.email || searchParams.get("email");
+    if (autoEmail) setEmail(autoEmail);
+  }, [location, searchParams]);
+
+  // Fungsi helper untuk menjamin gambar telah termuat sebelum snapshot
+  const waitForImage = (imgElement) => {
+    return new Promise((resolve) => {
+      if (imgElement.complete && imgElement.naturalHeight !== 0) {
+        resolve();
+      } else {
+        imgElement.onload = () => resolve();
+        imgElement.onerror = () => resolve();
+      }
+    });
+  };
 
   const handleCheck = async (e) => {
     e.preventDefault();
+    if (!email.trim()) {
+      setError("Harap masukkan email.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
@@ -284,7 +326,7 @@ const CheckStatusPage = () => {
 
       if (res.data.success) {
         setResult(res.data.data);
-        // SOLUSI: Generate QR sebagai Base64 Image segera setelah pencarian sukses
+        // SOLUSI ANDROID: Konversi ke Base64 segera
         const qrUrl = await QRCode.toDataURL(res.data.data._id, {
           width: 600,
           margin: 1,
@@ -294,25 +336,41 @@ const CheckStatusPage = () => {
         setTimeout(() => setIsTicketLoaded(true), 200);
       }
     } catch (err) {
-      setError("Data tidak ditemukan.");
+      setError("Data tidak ditemukan. Pastikan email Anda benar.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownloadPDF = async () => {
-    if (!printRef.current || !result) return;
+    if (!printRef.current || !result || !qrDataUrl) return;
     setDownloading(true);
 
     try {
-      // Jeda krusial agar browser Android merender Image Base64 sepenuhnya
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      // 1. Dapatkan elemen gambar di dalam komponen tersembunyi
+      const qrImgInsidePrint = printRef.current.querySelector(
+        'img[alt="Ticket QR"]',
+      );
+
+      // 2. TUNGGU gambar benar-benar ter-load (Mencegah QR kosong di PDF)
+      if (qrImgInsidePrint) {
+        await waitForImage(qrImgInsidePrint);
+      }
+
+      // 3. Jeda sinkronisasi render (Sangat penting untuk mobile browser)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(printRef.current, {
-        scale: 3,
+        scale: 3, // Kualitas tinggi agar QR mudah di-scan
         useCORS: true,
         backgroundColor: "#ffffff",
         allowTaint: true,
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Memastikan gambar terlihat pada dokumen clone html2canvas
+          const qr = clonedDoc.querySelector('img[alt="Ticket QR"]');
+          if (qr) qr.style.visibility = "visible";
+        },
       });
 
       const imgData = canvas.toDataURL("image/png", 1.0);
@@ -322,9 +380,10 @@ const CheckStatusPage = () => {
       const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
-      pdf.save(`Ticket_SHR_${result.fullName.replace(/\s+/g, "_")}.pdf`);
+      pdf.save(`Ticket_SHR2026_${result.bibNumber || "Registration"}.pdf`);
     } catch (err) {
       console.error("PDF Error:", err);
+      alert("Gagal mengunduh PDF. Silakan coba lagi.");
     } finally {
       setDownloading(false);
     }
@@ -332,12 +391,23 @@ const CheckStatusPage = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans text-slate-900 relative overflow-x-hidden">
-      {/* COMPONENT TERSEMBUNYI UNTUK PDF */}
-      <div style={{ position: "absolute", top: "-20000px", left: "-20000px" }}>
+      {/* LOGIKA FIX: Komponen PDF diletakkan di luar layar (Off-screen) 
+        Jangan gunakan display: none karena Android sering mematikan render gambar pada elemen tersembunyi.
+      */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-10000px",
+          left: "0",
+          opacity: "1",
+          zIndex: "-100",
+          pointerEvents: "none",
+        }}
+      >
         <PrintableTicket ref={printRef} data={result} qrUrl={qrDataUrl} />
       </div>
 
-      {/* HEADER DECORATION */}
+      {/* HEADER VISUAL */}
       <div className="absolute top-0 left-0 w-full h-80 bg-slate-900 rounded-b-[3rem] shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-[#450a0a] via-transparent to-transparent"></div>
       </div>
@@ -358,7 +428,7 @@ const CheckStatusPage = () => {
             Status Peserta
           </h1>
           <p className="text-slate-300 font-light italic">
-            "Merah Keberanian, Emas Kejayaan"
+            "Surabaya Heritage Run 2026"
           </p>
         </div>
 
@@ -472,7 +542,7 @@ const CheckStatusPage = () => {
               ) : (
                 <Download className="group-hover:animate-bounce text-[#D4AF37]" />
               )}
-              <span className="tracking-[0.3em] text-sm uppercase">
+              <span className="tracking-[0.2em] text-sm uppercase">
                 {downloading ? "MEMPROSES PDF..." : "DOWNLOAD E-TICKET (PDF)"}
               </span>
             </button>
