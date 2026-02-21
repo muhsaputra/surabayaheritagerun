@@ -308,59 +308,59 @@ const LandingPage = () => {
 
       {/* --- KATEGORI LARI --- */}
       <div className="relative py-32 overflow-hidden bg-[#FDFBF7]">
-        {/* Background Section with Heritage Overlay */}
+        {/* Background Section with Bold Heritage Overlay */}
         <div className="absolute inset-0 z-0">
           <img
             src={heroImage}
-            alt="Background Heritage"
+            alt="Background Surabaya Heritage"
             loading="lazy"
-            className="w-full h-full object-cover object-center grayscale-[20%]"
+            className="w-full h-full object-cover object-center grayscale-[30%] opacity-40"
           />
-          {/* Emerald & Gradient Overlay */}
-          <div className="absolute inset-0 z-0 bg-[#1B4D3E]/85 mix-blend-multiply"></div>
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#1B4D3E] via-transparent to-[#1B4D3E]"></div>
+          {/* Deep Maroon & Gradient Overlay */}
+          <div className="absolute inset-0 z-0 bg-[#450a0a]/90 mix-blend-multiply"></div>
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#450a0a] via-transparent to-[#450a0a]"></div>
         </div>
 
         {/* Header Section */}
         <div className="text-center px-4 max-w-4xl mx-auto mb-20 relative z-10">
-          <span className="text-[#D4AF37] font-sans font-bold tracking-[0.3em] uppercase text-sm mb-4 block">
-            Eksplorasi Kota Tua
+          <span className="text-[#D4AF37] font-sans font-bold tracking-[0.4em] uppercase text-xs mb-4 block">
+            Semangat Keberanian Kota Pahlawan
           </span>
           <h2 className="text-5xl md:text-6xl font-serif font-bold text-white mb-6 drop-shadow-2xl">
             Pilih Kategori <span className="italic text-[#D4AF37]">Run</span>
           </h2>
           <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-8"></div>
-          <p className="text-stone-200 text-lg font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-stone-300 text-lg font-light max-w-2xl mx-auto leading-relaxed font-sans">
             Satu fasilitas premium untuk semua pelari. Tanpa perbedaan, tanpa
             pengecualian.
             <br className="hidden md:block" />
-            <span className="text-[#D4AF37] font-serif italic mt-2 block text-xl">
-              "Semua finisher adalah pemenang sejarah."
+            <span className="text-[#D4AF37] font-serif italic mt-3 block text-xl">
+              "Merah keberanian, emas kejayaan."
             </span>
           </p>
         </div>
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row justify-center gap-10">
-            {/* 5K Category - The Emerald Card */}
-            <div className="group relative bg-[#1B4D3E] p-1 rounded-[2.5rem] flex-1 shadow-2xl transition-all duration-500 hover:-translate-y-3">
-              <div className="bg-[#1B4D3E] p-10 rounded-[2rem] h-full flex flex-col border border-[#D4AF37]/30">
+            {/* 5K Category - The Hero Maroon Card */}
+            <div className="group relative bg-[#9B1B1B] p-1 rounded-[2.5rem] flex-1 shadow-[0_20px_50px_rgba(155,27,27,0.3)] transition-all duration-500 hover:-translate-y-3">
+              <div className="bg-[#9B1B1B] p-10 rounded-[2rem] h-full flex flex-col border border-[#D4AF37]/40">
                 <div className="mb-8 flex justify-between items-start">
-                  <span className="bg-[#D4AF37] text-[#1B4D3E] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                  <span className="bg-[#D4AF37] text-[#450a0a] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
                     Most Popular
                   </span>
-                  <Medal className="text-[#D4AF37]/50" size={32} />
+                  <Medal className="text-[#D4AF37]/60" size={32} />
                 </div>
 
                 <h3 className="text-7xl font-serif font-bold text-[#D4AF37] mb-2 leading-none">
                   5K
                 </h3>
-                <p className="text-white/70 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
+                <p className="text-white/80 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
                   Heritage Professional Run
                 </p>
 
                 <div className="border-t border-[#D4AF37]/20 pt-8 mt-auto">
-                  <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mb-2">
+                  <p className="text-[#D4AF37]/70 text-[10px] font-bold uppercase tracking-widest mb-2">
                     Biaya Registrasi
                   </p>
                   <div className="flex items-baseline gap-2 mb-8">
@@ -373,25 +373,25 @@ const LandingPage = () => {
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-[#D4AF37] text-[#1B4D3E] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-white transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_10px_20px_-10px_rgba(212,175,55,0.5)]"
+                    className="w-full py-5 bg-[#D4AF37] text-[#450a0a] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-white transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_15px_30px_-10px_rgba(212,175,55,0.4)]"
                   >
-                    Amankan Slot 5K <ArrowRight size={18} />
+                    Daftar Sekarang <ArrowRight size={18} />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* 3K Category - The Cream Card */}
+            {/* 3K Category - The Light Antique Card */}
             <div className="group relative bg-[#FDFBF7] p-1 rounded-[2.5rem] flex-1 shadow-xl transition-all duration-500 hover:-translate-y-3">
               <div className="bg-[#FDFBF7] p-10 rounded-[2rem] h-full flex flex-col border border-stone-200">
                 <div className="mb-8 flex justify-between items-start">
-                  <span className="bg-stone-100 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-200">
+                  <span className="bg-[#9B1B1B]/10 text-[#9B1B1B] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-[#9B1B1B]/20">
                     Family Friendly
                   </span>
                   <Users className="text-stone-300" size={32} />
                 </div>
 
-                <h3 className="text-7xl font-serif font-bold text-[#1B4D3E] mb-2 leading-none">
+                <h3 className="text-7xl font-serif font-bold text-[#9B1B1B] mb-2 leading-none">
                   3K
                 </h3>
                 <p className="text-stone-400 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
@@ -403,7 +403,7 @@ const LandingPage = () => {
                     Biaya Registrasi
                   </p>
                   <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-5xl font-serif font-bold text-[#1B4D3E]">
+                    <span className="text-5xl font-serif font-bold text-[#9B1B1B]">
                       {formatPrice(activePrices["3K"])}
                     </span>
                     <span className="text-stone-400 text-xs font-light">
@@ -412,7 +412,7 @@ const LandingPage = () => {
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-white border-2 border-[#1B4D3E] text-[#1B4D3E] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-[#1B4D3E] hover:text-[#D4AF37] transition-all duration-300 flex justify-center items-center gap-3"
+                    className="w-full py-5 bg-white border-2 border-[#9B1B1B] text-[#9B1B1B] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-[#9B1B1B] hover:text-white transition-all duration-300 flex justify-center items-center gap-3"
                   >
                     Daftar 3K <ArrowRight size={18} />
                   </button>
