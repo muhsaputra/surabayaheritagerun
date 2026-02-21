@@ -326,7 +326,7 @@ const LandingPage = () => {
         <div className="text-center px-4 max-w-4xl mx-auto mb-20 relative z-10">
           <div className="inline-block mb-4">
             <span className="text-[#D4AF37] font-sans font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs bg-white/5 px-4 py-2 rounded-full border border-[#D4AF37]/20 backdrop-blur-sm">
-              The Soul of Surabaya
+              The Soul of Surabaya.
             </span>
           </div>
           <h2 className="text-5xl md:text-7xl font-serif font-black text-white mb-6 drop-shadow-2xl tracking-tight">
