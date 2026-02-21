@@ -23,7 +23,7 @@ import {
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
 // --- KOMPONEN TIKET PREMIUM (PRINTABLE) ---
-// Komponen ini disembunyikan dari layar tapi di-render secara aktif untuk snapshot PDF
+// Komponen ini diletakkan di luar layar untuk snapshot PDF yang stabil
 const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
   if (!data) return null;
 
@@ -31,7 +31,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
     <div
       ref={ref}
       style={{
-        width: "794px", // Lebar standar A4 (96 DPI)
+        width: "794px", // Standar A4 96 DPI
         background: "#ffffff",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         position: "relative",
@@ -195,7 +195,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             ))}
           </div>
 
-          {/* QR CODE - DITERIMA SEBAGAI IMG TAG AGAR STABIL DI HP */}
+          {/* QR CODE - DITERIMA SEBAGAI IMG TAG AGAR STABIL DI ANDROID/IOS */}
           <div
             style={{
               textAlign: "center",
@@ -216,7 +216,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
               {qrUrl ? (
                 <img
                   src={qrUrl}
-                  alt="Ticket QR"
+                  alt="Ticket QR PDF"
                   style={{ width: "220px", height: "220px", display: "block" }}
                 />
               ) : (
@@ -297,7 +297,7 @@ const CheckStatusPage = () => {
     if (autoEmail) setEmail(autoEmail);
   }, [location, searchParams]);
 
-  // Fungsi helper untuk menjamin gambar telah termuat sebelum snapshot
+  // FIX: Jamin gambar benar-benar siap di memori sebelum snapshot
   const waitForImage = (imgElement) => {
     return new Promise((resolve) => {
       if (imgElement.complete && imgElement.naturalHeight !== 0) {
@@ -326,7 +326,7 @@ const CheckStatusPage = () => {
 
       if (res.data.success) {
         setResult(res.data.data);
-        // SOLUSI ANDROID: Konversi ke Base64 segera
+        // SOLUSI ANDROID: Konversi ke Base64 segera agar siap pakai
         const qrUrl = await QRCode.toDataURL(res.data.data._id, {
           width: 600,
           margin: 1,
@@ -349,7 +349,7 @@ const CheckStatusPage = () => {
     try {
       // 1. Dapatkan elemen gambar di dalam komponen tersembunyi
       const qrImgInsidePrint = printRef.current.querySelector(
-        'img[alt="Ticket QR"]',
+        'img[alt="Ticket QR PDF"]',
       );
 
       // 2. TUNGGU gambar benar-benar ter-load (Mencegah QR kosong di PDF)
@@ -357,18 +357,16 @@ const CheckStatusPage = () => {
         await waitForImage(qrImgInsidePrint);
       }
 
-      // 3. Jeda sinkronisasi render (Sangat penting untuk mobile browser)
+      // 3. Jeda sinkronisasi render browser mobile
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(printRef.current, {
-        scale: 3, // Kualitas tinggi agar QR mudah di-scan
+        scale: 3, // Kualitas tinggi agar scan lancar
         useCORS: true,
         backgroundColor: "#ffffff",
         allowTaint: true,
-        logging: false,
         onclone: (clonedDoc) => {
-          // Memastikan gambar terlihat pada dokumen clone html2canvas
-          const qr = clonedDoc.querySelector('img[alt="Ticket QR"]');
+          const qr = clonedDoc.querySelector('img[alt="Ticket QR PDF"]');
           if (qr) qr.style.visibility = "visible";
         },
       });
@@ -391,9 +389,7 @@ const CheckStatusPage = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans text-slate-900 relative overflow-x-hidden">
-      {/* LOGIKA FIX: Komponen PDF diletakkan di luar layar (Off-screen) 
-        Jangan gunakan display: none karena Android sering mematikan render gambar pada elemen tersembunyi.
-      */}
+      {/* FIX LOGIKA: Off-screen Rendering (Jangan gunakan display: none agar Android merender gambar) */}
       <div
         style={{
           position: "absolute",
@@ -407,16 +403,15 @@ const CheckStatusPage = () => {
         <PrintableTicket ref={printRef} data={result} qrUrl={qrDataUrl} />
       </div>
 
-      {/* HEADER VISUAL */}
       <div className="absolute top-0 left-0 w-full h-80 bg-slate-900 rounded-b-[3rem] shadow-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-[#450a0a] via-transparent to-transparent"></div>
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pt-10 pb-20">
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-10 text-white">
           <button
             onClick={() => navigate("/")}
-            className="text-white hover:text-red-400 flex items-center gap-2 font-bold transition-all bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-md"
+            className="hover:text-red-400 flex items-center gap-2 font-bold transition-all bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-md"
           >
             <ArrowLeft size={18} /> Beranda
           </button>
@@ -432,7 +427,6 @@ const CheckStatusPage = () => {
           </p>
         </div>
 
-        {/* SEARCH FORM */}
         <form
           onSubmit={handleCheck}
           className="bg-white p-2.5 rounded-[2rem] shadow-2xl mb-12 flex relative z-20 transition-all border border-slate-100"
@@ -453,7 +447,7 @@ const CheckStatusPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#9B1B1B] hover:bg-[#7a1515] text-white font-black px-10 rounded-2xl transition-all disabled:opacity-70 flex items-center gap-3 shadow-xl"
+            className="bg-[#9B1B1B] hover:bg-[#7a1515] text-white font-bold px-10 rounded-2xl transition-all disabled:opacity-70 flex items-center gap-3 shadow-xl"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={20} />
@@ -480,7 +474,7 @@ const CheckStatusPage = () => {
                   </p>
                 </div>
                 <div
-                  className={`flex flex-col items-center justify-center w-24 h-24 rounded-3xl text-white ${result.category === "5K" ? "bg-slate-900 shadow-xl shadow-slate-200" : "bg-[#9B1B1B] shadow-xl shadow-red-100"}`}
+                  className={`flex flex-col items-center justify-center w-24 h-24 rounded-3xl text-white ${result.category === "5K" ? "bg-slate-900 shadow-xl" : "bg-[#9B1B1B] shadow-xl"}`}
                 >
                   <span className="text-[10px] font-black opacity-70 uppercase tracking-tighter">
                     Category
@@ -492,24 +486,24 @@ const CheckStatusPage = () => {
               <div className="px-10 pb-10">
                 <div className="grid grid-cols-2 gap-6 mb-8">
                   <div className="bg-[#FDFBF7] p-8 rounded-[2rem] border border-red-50 text-center">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center justify-center gap-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
                       <Hash size={14} /> BIB Number
                     </span>
-                    <span className="text-5xl font-black text-[#9B1B1B] font-serif tracking-tighter">
+                    <span className="text-5xl font-black text-[#9B1B1B] font-serif">
                       {result.bibNumber || "---"}
                     </span>
                   </div>
                   <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100 text-center">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 flex items-center justify-center gap-2">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center justify-center gap-2">
                       <Shirt size={14} /> Jersey
                     </span>
-                    <span className="text-4xl font-black text-slate-900 tracking-tighter">
+                    <span className="text-4xl font-black text-slate-900 uppercase">
                       {result.jerseySize}
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-[#1B4D3E] p-4 rounded-2xl text-center mb-8 flex items-center justify-center gap-3">
+                <div className="bg-[#1B4D3E] p-4 rounded-2xl text-center mb-8 flex items-center justify-center gap-3 shadow-md">
                   <ShieldCheck className="text-[#D4AF37]" size={20} />
                   <span className="text-white font-black text-xs tracking-widest uppercase">
                     E-Ticket Terverifikasi Lunas
@@ -517,7 +511,7 @@ const CheckStatusPage = () => {
                 </div>
 
                 <div className="bg-[#F9FAFB] p-10 border-2 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center text-center">
-                  <div className="bg-white p-4 rounded-3xl shadow-xl border-2 border-slate-100 mb-6 transform transition-transform hover:scale-105">
+                  <div className="bg-white p-4 rounded-3xl shadow-xl border-2 border-slate-100 mb-6 transform hover:scale-105 transition-all">
                     <QRCodeCanvas
                       value={result._id}
                       size={150}
