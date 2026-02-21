@@ -306,90 +306,114 @@ const LandingPage = () => {
       </div>
 
       {/* --- KATEGORI LARI --- */}
-      <div className="relative py-24 overflow-hidden">
+      <div className="relative py-32 overflow-hidden bg-[#FDFBF7]">
+        {/* Background Section with Heritage Overlay */}
         <div className="absolute inset-0 z-0">
           <img
             src={heroImage}
-            alt="Background Kategori"
+            alt="Background Heritage"
             loading="lazy"
-            className="w-full h-full object-cover object-center"
+            className="w-full h-full object-cover object-center grayscale-[20%]"
           />
+          {/* Emerald & Gradient Overlay */}
+          <div className="absolute inset-0 z-0 bg-[#1B4D3E]/85 mix-blend-multiply"></div>
+          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#1B4D3E] via-transparent to-[#1B4D3E]"></div>
         </div>
-        <div className="absolute inset-0 z-0 bg-slate-900/85 mix-blend-multiply"></div>
-        <div className="absolute inset-0 z-0 bg-gradient-to-b from-slate-900/80 via-transparent to-slate-900/80"></div>
 
-        <div className="text-center px-4 max-w-4xl mx-auto mb-16 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-6 drop-shadow-lg">
-            Pilih Kategori Lari
+        {/* Header Section */}
+        <div className="text-center px-4 max-w-4xl mx-auto mb-20 relative z-10">
+          <span className="text-[#D4AF37] font-sans font-bold tracking-[0.3em] uppercase text-sm mb-4 block">
+            Eksplorasi Kota Tua
+          </span>
+          <h2 className="text-5xl md:text-6xl font-serif font-bold text-white mb-6 drop-shadow-2xl">
+            Pilih Kategori <span className="italic text-[#D4AF37]">Run</span>
           </h2>
-          <p className="text-gray-300 text-lg drop-shadow-md">
-            Satu fasilitas untuk semua. Tanpa perbedaan, tanpa pengecualian.{" "}
-            <br />
-            <span className="text-red-500 font-bold">
-              Semua finisher adalah juara.
+          <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-8"></div>
+          <p className="text-stone-200 text-lg font-light max-w-2xl mx-auto leading-relaxed">
+            Satu fasilitas premium untuk semua pelari. Tanpa perbedaan, tanpa
+            pengecualian.
+            <br className="hidden md:block" />
+            <span className="text-[#D4AF37] font-serif italic mt-2 block text-xl">
+              "Semua finisher adalah pemenang sejarah."
             </span>
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row justify-center gap-8">
-            <div className="bg-white p-2 rounded-[2.5rem] flex-1 shadow-2xl hover:scale-105 transition-transform duration-300">
-              <div className="bg-slate-50 p-8 rounded-[2rem] h-full flex flex-col border border-slate-100">
-                <div className="mb-6">
-                  <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row justify-center gap-10">
+            {/* 5K Category - The Emerald Card */}
+            <div className="group relative bg-[#1B4D3E] p-1 rounded-[2.5rem] flex-1 shadow-2xl transition-all duration-500 hover:-translate-y-3">
+              <div className="bg-[#1B4D3E] p-10 rounded-[2rem] h-full flex flex-col border border-[#D4AF37]/30">
+                <div className="mb-8 flex justify-between items-start">
+                  <span className="bg-[#D4AF37] text-[#1B4D3E] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
                     Most Popular
                   </span>
+                  <Medal className="text-[#D4AF37]/50" size={32} />
                 </div>
-                <h3 className="text-6xl font-black text-slate-900 mb-2">5K</h3>
-                <p className="text-slate-500 font-bold tracking-widest uppercase mb-8">
-                  Heritage Run
+
+                <h3 className="text-7xl font-serif font-bold text-[#D4AF37] mb-2 leading-none">
+                  5K
+                </h3>
+                <p className="text-white/70 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
+                  Heritage Professional Run
                 </p>
-                <div className="border-t border-slate-200 pt-6">
-                  <p className="text-slate-400 text-xs mb-1">
-                    Biaya Pendaftaran
+
+                <div className="border-t border-[#D4AF37]/20 pt-8 mt-auto">
+                  <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mb-2">
+                    Biaya Registrasi
                   </p>
-                  <div className="flex items-end gap-2 mb-6">
-                    <span className="text-4xl font-black text-slate-900">
+                  <div className="flex items-baseline gap-2 mb-8">
+                    <span className="text-5xl font-serif font-bold text-white">
                       {formatPrice(activePrices["5K"])}
                     </span>
-                    <span className="text-sm text-slate-500 mb-2">/ pax</span>
+                    <span className="text-white/40 text-xs font-light">
+                      / pax
+                    </span>
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-4 bg-red-600 text-white font-bold text-lg rounded-xl hover:bg-red-700 transition-all flex justify-center items-center gap-2"
+                    className="w-full py-5 bg-[#D4AF37] text-[#1B4D3E] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-white transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_10px_20px_-10px_rgba(212,175,55,0.5)]"
                   >
-                    Daftar 5K <ArrowRight size={20} />
+                    Amankan Slot 5K <ArrowRight size={18} />
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-2 rounded-[2.5rem] flex-1 shadow-xl hover:scale-105 transition-transform duration-300">
-              <div className="bg-white p-8 rounded-[2rem] h-full flex flex-col">
-                <div className="mb-6">
-                  <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+            {/* 3K Category - The Cream Card */}
+            <div className="group relative bg-[#FDFBF7] p-1 rounded-[2.5rem] flex-1 shadow-xl transition-all duration-500 hover:-translate-y-3">
+              <div className="bg-[#FDFBF7] p-10 rounded-[2rem] h-full flex flex-col border border-stone-200">
+                <div className="mb-8 flex justify-between items-start">
+                  <span className="bg-stone-100 text-stone-500 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-stone-200">
                     Family Friendly
                   </span>
+                  <Users className="text-stone-300" size={32} />
                 </div>
-                <h3 className="text-6xl font-black text-slate-900 mb-2">3K</h3>
-                <p className="text-slate-500 font-bold tracking-widest uppercase mb-8">
-                  Fun Walk
+
+                <h3 className="text-7xl font-serif font-bold text-[#1B4D3E] mb-2 leading-none">
+                  3K
+                </h3>
+                <p className="text-stone-400 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
+                  Heritage Fun Walk
                 </p>
-                <div className="border-t border-slate-100 pt-6">
-                  <p className="text-slate-400 text-xs mb-1">
-                    Biaya Pendaftaran
+
+                <div className="border-t border-stone-100 pt-8 mt-auto">
+                  <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-2">
+                    Biaya Registrasi
                   </p>
-                  <div className="flex items-end gap-2 mb-6">
-                    <span className="text-4xl font-black text-slate-900">
+                  <div className="flex items-baseline gap-2 mb-8">
+                    <span className="text-5xl font-serif font-bold text-[#1B4D3E]">
                       {formatPrice(activePrices["3K"])}
                     </span>
-                    <span className="text-sm text-slate-500 mb-2">/ pax</span>
+                    <span className="text-stone-400 text-xs font-light">
+                      / pax
+                    </span>
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-4 bg-white border-2 border-slate-900 text-slate-900 font-bold text-lg rounded-xl hover:bg-slate-900 hover:text-white transition-all flex justify-center items-center gap-2"
+                    className="w-full py-5 bg-white border-2 border-[#1B4D3E] text-[#1B4D3E] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-[#1B4D3E] hover:text-[#D4AF37] transition-all duration-300 flex justify-center items-center gap-3"
                   >
-                    Daftar 3K <ArrowRight size={20} />
+                    Daftar 3K <ArrowRight size={18} />
                   </button>
                 </div>
               </div>
