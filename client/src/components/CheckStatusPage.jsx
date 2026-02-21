@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import QRCode from "qrcode"; // Library qrcode (pastikan sudah instal: npm install qrcode)
+import QRCode from "qrcode";
 import { QRCodeCanvas } from "qrcode.react";
 import {
   Search,
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
-// --- KOMPONEN TIKET PREMIUM (KHUSUS UNTUK GENERATE PDF) ---
+// --- KOMPONEN TIKET PREMIUM (MAROON THEME) ---
 const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
   if (!data) return null;
 
@@ -30,7 +30,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
     <div
       ref={ref}
       style={{
-        width: "794px", // Ukuran A4 standar (pixel 96dpi)
+        width: "794px",
         background: "#ffffff",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         position: "relative",
@@ -73,31 +73,24 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
 
         {/* 3. WELCOME MESSAGE */}
         <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          <h2
-            style={{
-              fontSize: "28px",
-              fontWeight: "800",
-              margin: "0",
-              color: "#0F172A",
-            }}
-          >
+          <h2 style={{ fontSize: "28px", fontWeight: "800", margin: "0" }}>
             Halo, {data.fullName}!
           </h2>
           <div
             style={{
               display: "inline-block",
-              background: "#F0FDF4",
-              color: "#16A34A",
+              background: "#FDF2F2",
+              color: "#9B1B1B",
               padding: "8px 20px",
               borderRadius: "30px",
               fontSize: "13px",
               fontWeight: "900",
               marginTop: "12px",
               textTransform: "uppercase",
-              border: "1px solid #BBF7D0",
+              border: "1px solid #F87171",
             }}
           >
-            Status: TERVERIFIKASI LUNAS
+            STATUS: TERVERIFIKASI LUNAS
           </div>
         </div>
 
@@ -107,13 +100,11 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             border: "2px solid #E2E8F0",
             borderRadius: "24px",
             overflow: "hidden",
-            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.05)",
           }}
         >
-          {/* Box Header */}
           <div
             style={{
-              background: "#F8FAFC",
+              background: "#F9FAFB",
               padding: "25px",
               borderBottom: "2px dashed #CBD5E1",
               display: "flex",
@@ -129,10 +120,9 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
                   fontWeight: "900",
                   textTransform: "uppercase",
                   margin: "0",
-                  letterSpacing: "1px",
                 }}
               >
-                KATEGORI LARI
+                KATEGORI
               </p>
               <p
                 style={{
@@ -153,7 +143,6 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
                   fontWeight: "900",
                   textTransform: "uppercase",
                   margin: "0",
-                  letterSpacing: "1px",
                 }}
               >
                 NOMOR BIB
@@ -171,23 +160,19 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             </div>
           </div>
 
-          {/* Info Grid */}
           <div
             style={{
               padding: "35px",
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "30px",
-              background: "#ffffff",
             }}
           >
             {[
               { label: "Hari & Tanggal", val: "Minggu, 24 Mei 2026" },
               { label: "Waktu Flag Off", val: "06.00 WIB" },
               { label: "Tempat (Venue)", val: "Plaza Internatio" },
-              { label: "Lokasi", val: "Jl. Garuda, Surabaya" },
               { label: "Ukuran Jersey", val: data.jerseySize },
-              { label: "Status Tiket", val: "PAID / VALID", color: "#16A34A" },
             ].map((item, i) => (
               <div key={i}>
                 <p
@@ -196,26 +181,19 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
                     color: "#94A3B8",
                     fontWeight: "900",
                     textTransform: "uppercase",
-                    margin: "0 0 5px 0",
+                    margin: "0",
                   }}
                 >
                   {item.label}
                 </p>
-                <p
-                  style={{
-                    fontSize: "17px",
-                    fontWeight: "800",
-                    margin: "0",
-                    color: item.color || "#0F172A",
-                  }}
-                >
+                <p style={{ fontSize: "17px", fontWeight: "800", margin: "0" }}>
                   {item.val}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* QR Code Section - GUNAKAN IMG TAG UNTUK STABILITAS DI ANDROID */}
+          {/* QR CODE - INJECTED AS STATIC IMAGE FOR ANDROID/LAPTOP STABILITY */}
           <div
             style={{
               textAlign: "center",
@@ -228,7 +206,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
               style={{
                 display: "inline-block",
                 padding: "18px",
-                border: "4px solid #1B4D3E",
+                border: "4px solid #9B1B1B",
                 borderRadius: "24px",
                 background: "#ffffff",
               }}
@@ -253,23 +231,13 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
               style={{
                 marginTop: "20px",
                 fontWeight: "900",
-                color: "#1B4D3E",
+                color: "#9B1B1B",
                 fontSize: "14px",
                 textTransform: "uppercase",
                 letterSpacing: "2px",
               }}
             >
               SCAN SAAT PENGAMBILAN RACE PACK
-            </p>
-            <p
-              style={{
-                color: "#94A3B8",
-                fontSize: "10px",
-                fontFamily: "monospace",
-                marginTop: "8px",
-              }}
-            >
-              ID: {data._id}
             </p>
           </div>
         </div>
@@ -283,9 +251,6 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
           color: "#94A3B8",
         }}
       >
-        <p style={{ margin: 0, fontSize: "12px", fontWeight: "500" }}>
-          Tunjukkan e-ticket ini & KTP asli saat Race Pack Collection.
-        </p>
         <p
           style={{
             margin: "8px 0 0 0",
@@ -295,7 +260,7 @@ const PrintableTicket = React.forwardRef(({ data, qrUrl }, ref) => {
             letterSpacing: "2px",
           }}
         >
-          OFFICIAL TICKET SURABAYA HERITAGE RUN 2026
+          WWW.SURABAYAHERITAGERUN.COM
         </p>
       </div>
     </div>
@@ -312,26 +277,13 @@ const CheckStatusPage = () => {
   const [qrDataUrl, setQrDataUrl] = useState("");
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
   const printRef = useRef(null);
-
-  useEffect(() => {
-    let autoEmail = location.state?.email || searchParams.get("email");
-    if (autoEmail) setEmail(autoEmail);
-  }, [location, searchParams]);
 
   const handleCheck = async (e) => {
     e.preventDefault();
-    if (!email.trim()) {
-      setError("Harap masukkan email.");
-      return;
-    }
-
     setLoading(true);
     setError("");
     setResult(null);
-    setIsTicketLoaded(false);
 
     try {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5001";
@@ -339,17 +291,17 @@ const CheckStatusPage = () => {
 
       if (res.data.success) {
         setResult(res.data.data);
-        // Generate QR Data URL segera setelah data didapat (Solusi Android)
+        // Generate QR Code as Static Image (Base64) immediately
         const qrUrl = await QRCode.toDataURL(res.data.data._id, {
           width: 600,
           margin: 1,
-          color: { dark: "#1B4D3E", light: "#FFFFFF" },
+          color: { dark: "#9B1B1B", light: "#FFFFFF" },
         });
         setQrDataUrl(qrUrl);
         setTimeout(() => setIsTicketLoaded(true), 200);
       }
     } catch (err) {
-      setError("Data tidak ditemukan. Pastikan email terdaftar benar.");
+      setError("Data tidak ditemukan.");
     } finally {
       setLoading(false);
     }
@@ -360,33 +312,25 @@ const CheckStatusPage = () => {
     setDownloading(true);
 
     try {
-      // Tunggu render internal selesai (Buffer untuk Android)
+      // Tunggu render internal selesai (Penting untuk Android & Laptop)
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(printRef.current, {
-        scale: 3, // High resolution
+        scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff",
-        allowTaint: true,
       });
 
       const imgData = canvas.toDataURL("image/png", 1.0);
       const pdf = new jsPDF("p", "mm", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-
       const imgProps = pdf.getImageProperties(imgData);
       const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-      // Posisikan tiket di tengah halaman A4
-      const yPos = (pdfHeight - imgHeight) / 2;
-
-      pdf.addImage(imgData, "PNG", 0, yPos > 0 ? yPos : 0, pdfWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, imgHeight);
       pdf.save(`Ticket_SHR_${result.fullName.replace(/\s+/g, "_")}.pdf`);
     } catch (err) {
       console.error("PDF Error:", err);
-      alert("Gagal mengunduh PDF. Silakan coba lagi.");
     } finally {
       setDownloading(false);
     }
@@ -394,21 +338,13 @@ const CheckStatusPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 relative">
-      {/* HIDDEN PRINTABLE COMPONENT (Solusi PDF) */}
+      {/* HIDDEN PRINTABLE COMPONENT */}
       <div style={{ position: "absolute", top: "-20000px", left: "-20000px" }}>
         <PrintableTicket ref={printRef} data={result} qrUrl={qrDataUrl} />
       </div>
 
-      {/* HEADER VISUAL */}
       <div className="absolute top-0 left-0 w-full h-80 bg-slate-900 overflow-hidden rounded-b-[3rem] shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 via-transparent to-transparent"></div>
-        <div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        ></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#450a0a] via-transparent to-transparent"></div>
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pt-10 pb-20">
@@ -419,27 +355,20 @@ const CheckStatusPage = () => {
           >
             <ArrowLeft size={16} /> Beranda
           </button>
-          <div className="flex items-center gap-2 text-red-400">
-            <Trophy size={16} />
-            <span className="text-white/60 font-serif text-sm tracking-widest uppercase italic">
-              Heritage Checker
-            </span>
-          </div>
         </div>
 
         <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-3">
+          <h1 className="text-4xl font-serif font-bold text-white mb-3 tracking-tight">
             Status Peserta
           </h1>
-          <p className="text-slate-300 font-light">
-            Masukkan email terdaftar untuk akses e-ticket Anda.
+          <p className="text-slate-300">
+            Gunakan email terdaftar untuk akses e-ticket Anda.
           </p>
         </div>
 
-        {/* SEARCH BOX */}
         <form
           onSubmit={handleCheck}
-          className="bg-white p-2.5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] mb-8 flex relative z-20 transition-all hover:shadow-[0_25px_60px_rgba(0,0,0,0.15)]"
+          className="bg-white p-2.5 rounded-3xl shadow-2xl mb-8 flex relative z-20 transition-all"
         >
           <div className="flex-1 relative">
             <Search
@@ -457,7 +386,7 @@ const CheckStatusPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="bg-[#9B1B1B] hover:bg-[#7a1515] text-white font-bold px-10 rounded-2xl transition-all disabled:opacity-70 flex items-center gap-3 shadow-lg shadow-red-900/20"
+            className="bg-[#9B1B1B] hover:bg-[#7a1515] text-white font-bold px-10 rounded-2xl transition-all disabled:opacity-70 flex items-center gap-3 shadow-lg"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={20} />
@@ -467,27 +396,16 @@ const CheckStatusPage = () => {
           </button>
         </form>
 
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-5 rounded-r-2xl flex items-center gap-4 shadow-sm animate-fade-in-up">
-            <AlertCircle size={24} className="shrink-0" />
-            <p className="text-sm font-bold">{error}</p>
-          </div>
-        )}
-
-        {/* WEB VIEW TICKET */}
         {result && (
           <div
             className={`transition-all duration-1000 ${isTicketLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
           >
             <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border border-slate-200 mb-8 relative">
-              <div className="h-3 w-full bg-gradient-to-r from-[#9B1B1B] to-[#1B4D3E]"></div>
-
+              <div className="h-3 w-full bg-[#9B1B1B]"></div>
+              {/* Web View Ticket Header */}
               <div className="px-10 pt-10 pb-4 flex justify-between items-start">
                 <div>
-                  <span className="inline-block px-4 py-1.5 bg-[#FDFBF7] text-[#9B1B1B] text-[10px] font-black tracking-widest uppercase rounded-full border border-red-100 mb-4">
-                    Official Entry Pass 2026
-                  </span>
-                  <h2 className="text-3xl md:text-4xl font-black text-slate-900 uppercase leading-tight mb-1">
+                  <h2 className="text-3xl font-black text-slate-900 uppercase">
                     {result.fullName}
                   </h2>
                   <p className="text-slate-400 text-sm font-medium">
@@ -495,98 +413,57 @@ const CheckStatusPage = () => {
                   </p>
                 </div>
                 <div
-                  className={`flex flex-col items-center justify-center w-24 h-24 rounded-3xl shadow-xl border-4 border-white ${result.category === "5K" ? "bg-slate-900" : "bg-[#9B1B1B]"} text-white`}
+                  className={`flex flex-col items-center justify-center w-24 h-24 rounded-3xl text-white ${result.category === "5K" ? "bg-slate-900" : "bg-[#9B1B1B]"}`}
                 >
                   <span className="text-[10px] font-bold opacity-70 uppercase">
                     Category
                   </span>
-                  <span className="text-4xl font-black leading-none mt-1">
-                    {result.category}
-                  </span>
+                  <span className="text-4xl font-black">{result.category}</span>
                 </div>
               </div>
 
-              {/* SEPARATOR */}
-              <div className="relative h-1 my-6 px-4">
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full border-t-2 border-dashed border-slate-200"></div>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-50 rounded-r-full -ml-4 border border-slate-200 border-l-0"></div>
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-50 rounded-l-full -mr-4 border border-slate-200 border-r-0"></div>
+              {/* DASHED LINE */}
+              <div className="relative h-1 my-6">
+                <div className="absolute left-0 top-1/2 w-full border-t-2 border-dashed border-slate-200"></div>
               </div>
 
               <div className="px-10 py-4">
                 <div className="grid grid-cols-2 gap-6 mb-8">
-                  <div className="bg-[#FDFBF7] p-6 rounded-3xl border border-red-50 flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-1">
-                      <Hash size={12} className="text-[#9B1B1B]" /> Nomor BIB
+                  <div className="bg-[#FDFBF7] p-6 rounded-3xl border border-red-50 text-center">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-center gap-1">
+                      <Hash size={12} /> BIB
                     </span>
                     <span className="text-4xl font-black text-[#9B1B1B] font-serif">
                       {result.bibNumber || "---"}
                     </span>
                   </div>
-                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center text-center">
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-1">
-                      <Shirt size={12} className="text-[#1B4D3E]" /> Jersey
+                  <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 text-center">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center justify-center gap-1">
+                      <Shirt size={12} /> Jersey
                     </span>
-                    <span className="text-3xl font-black text-slate-900 uppercase tracking-tighter">
+                    <span className="text-3xl font-black text-slate-900">
                       {result.jerseySize}
                     </span>
                   </div>
                 </div>
-
-                {/* INFO EVENT */}
-                <div className="bg-[#1B4D3E] rounded-[2rem] p-8 text-white shadow-2xl mb-8 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-700"></div>
-                  <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-white/10 rounded-xl">
-                        <Calendar className="text-[#D4AF37]" size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black text-white/50 uppercase">
-                          Tanggal
-                        </p>
-                        <p className="font-bold text-sm">24 Mei 2026</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-white/10 rounded-xl">
-                        <MapPin className="text-[#D4AF37]" size={20} />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-black text-white/50 uppercase">
-                          Lokasi
-                        </p>
-                        <p className="font-bold text-sm">Plaza Internatio</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  {result.paymentStatus === "paid" ? (
-                    <div className="bg-emerald-50 text-emerald-700 py-4 px-6 rounded-2xl border border-emerald-100 flex items-center justify-center gap-3 font-black text-sm uppercase tracking-widest shadow-sm">
-                      <CheckCircle size={20} /> Payment Verified
-                    </div>
-                  ) : (
-                    <div className="bg-orange-50 text-orange-700 py-4 px-6 rounded-2xl border border-orange-100 flex items-center justify-center gap-3 font-black text-sm uppercase tracking-widest animate-pulse">
-                      <ShieldCheck size={20} /> Waiting For Payment
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="bg-[#F9FAFB] p-8 border-t border-slate-100 flex flex-col items-center text-center">
-                <div className="bg-white p-3 rounded-3xl shadow-xl border-2 border-slate-100 mb-4 transform hover:scale-105 transition-transform">
-                  <QRCodeCanvas value={result._id} size={140} level="H" />
+                <div className="bg-white p-3 rounded-3xl shadow-xl border-2 border-slate-100 mb-4">
+                  <QRCodeCanvas
+                    value={result._id}
+                    size={140}
+                    level="H"
+                    fgColor="#9B1B1B"
+                  />
                 </div>
                 <p className="text-[10px] text-slate-400 font-serif italic font-bold uppercase tracking-[0.3em]">
-                  Scanned for Entry Pass
+                  Official Entry Pass
                 </p>
               </div>
             </div>
 
-            {/* ACTION BUTTONS */}
-            {result.paymentStatus === "paid" ? (
+            {result.paymentStatus === "paid" && (
               <button
                 onClick={handleDownloadPDF}
                 disabled={downloading}
@@ -598,27 +475,15 @@ const CheckStatusPage = () => {
                   <Download className="group-hover:animate-bounce" />
                 )}
                 <span className="tracking-[0.2em]">
-                  {downloading ? "GENERATING PDF..." : "DOWNLOAD E-TICKET"}
+                  {downloading
+                    ? "GENERATING PDF..."
+                    : "DOWNLOAD E-TICKET (PDF)"}
                 </span>
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  navigate("/payment", { state: { userData: result } })
-                }
-                className="w-full bg-[#9B1B1B] text-white font-black py-6 rounded-[2rem] shadow-2xl hover:bg-[#7a1515] transition-all flex justify-center items-center gap-4 transform hover:-translate-y-2"
-              >
-                COMPLETE PAYMENT <ChevronRight size={20} />
               </button>
             )}
           </div>
         )}
       </div>
-
-      <style>{`
-         .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 };
