@@ -22,6 +22,7 @@ import {
   User,
   Zap,
   Ticket,
+  Star,
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
