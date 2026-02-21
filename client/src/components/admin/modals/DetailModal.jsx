@@ -19,80 +19,70 @@ import {
   Fingerprint,
   Maximize2,
   AlertCircle,
-  Clock, // <--- Sudah ditambahkan di sini
+  Clock,
+  Medal,
 } from "lucide-react";
 import { getProofUrl } from "../utils/adminHelpers";
 
 const DetailModal = ({ participant, onClose, onRefresh }) => {
   const [showImageLightbox, setShowImageLightbox] = useState(false);
+  const [showConfirmOverlay, setShowConfirmOverlay] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
-  const handleVerifyPayment = async () => {
-    const result = await Swal.fire({
-      title: "Verifikasi Pembayaran?",
-      text: `Konfirmasi pembayaran manual untuk ${participant.fullName}? Nomor BIB akan terbit otomatis.`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#0f172a",
-      cancelButtonColor: "#ef4444",
-      confirmButtonText: "Ya, Verifikasi Lunas",
-      cancelButtonText: "Batal",
-      customClass: {
-        popup: "rounded-[2.5rem]",
-        confirmButton:
-          "rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest",
-        cancelButton:
-          "rounded-xl px-6 py-3 font-black text-xs uppercase tracking-widest",
+  // --- LOGIKA VERIFIKASI PEMBAYARAN ---
+  const handleVerifyPayment = () => {
+    // Membuka Custom Modal di depan Detail
+    setShowConfirmOverlay(true);
+  };
+
+  const executeFinalVerification = async () => {
+    setShowConfirmOverlay(false);
+    setIsProcessing(true);
+
+    Swal.fire({
+      title: "Memproses...",
+      text: "Mengupdate database & mengirim email tiket",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
       },
     });
 
-    if (result.isConfirmed) {
-      setIsProcessing(true);
-      Swal.fire({
-        title: "Memproses...",
-        text: "Mengupdate database & mengirim email tiket",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+    try {
+      const token = localStorage.getItem("adminToken");
+      const res = await axios.post(
+        `${API_URL}/api/admin/confirm-payment`,
+        { id: participant._id },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
 
-      try {
-        const token = localStorage.getItem("adminToken");
-        const res = await axios.post(
-          `${API_URL}/api/admin/confirm-payment`,
-          { id: participant._id },
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        if (res.data.success) {
-          await Swal.fire({
-            title: "Berhasil!",
-            text: `BIB #${res.data.bibNumber} telah terbit.`,
-            icon: "success",
-            confirmButtonColor: "#0f172a",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-          onRefresh();
-          onClose();
-        }
-      } catch (error) {
-        Swal.fire({
-          title: "Gagal!",
-          text:
-            error.response?.data?.message || "Terjadi kesalahan pada server.",
-          icon: "error",
+      if (res.data.success) {
+        await Swal.fire({
+          title: "Berhasil!",
+          text: `BIB #${res.data.bibNumber} telah terbit.`,
+          icon: "success",
           confirmButtonColor: "#0f172a",
+          timer: 2000,
+          showConfirmButton: false,
         });
-      } finally {
-        setIsProcessing(false);
+        onRefresh();
+        onClose();
       }
+    } catch (error) {
+      Swal.fire({
+        title: "Gagal!",
+        text: error.response?.data?.message || "Terjadi kesalahan pada server.",
+        icon: "error",
+        confirmButtonColor: "#0f172a",
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
+  // --- LOGIKA CHECK-IN ---
   const handleCheckIn = async () => {
     const result = await Swal.fire({
       title: "Konfirmasi Hadir",
@@ -167,9 +157,47 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
         </div>
       )}
 
-      {/* MODAL */}
+      {/* MODAL UTAMA */}
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 overflow-hidden">
         <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col md:flex-row relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-500">
+          {/* --- CUSTOM CONFIRMATION OVERLAY (MUNCUL DI DEPAN DETAIL) --- */}
+          {showConfirmOverlay && (
+            <div className="absolute inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300 p-6">
+              <div className="bg-white p-10 rounded-[3rem] shadow-2xl max-w-sm w-full text-center border border-slate-100 transform animate-in zoom-in-95 duration-300">
+                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <AlertCircle size={40} className="text-[#9B1B1B]" />
+                </div>
+
+                <h3 className="text-2xl font-serif font-bold text-slate-900 mb-2 leading-tight">
+                  Verifikasi Pembayaran?
+                </h3>
+                <p className="text-slate-500 text-sm mb-8 leading-relaxed">
+                  Konfirmasi pembayaran manual untuk <br />
+                  <span className="font-black text-slate-900">
+                    {participant.fullName}
+                  </span>
+                  ? Nomor BIB akan terbit otomatis.
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={executeFinalVerification}
+                    className="w-full py-4 bg-[#0f172a] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all shadow-lg"
+                  >
+                    YA, VERIFIKASI LUNAS
+                  </button>
+                  <button
+                    onClick={() => setShowConfirmOverlay(false)}
+                    className="w-full py-4 bg-red-50 text-red-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-100 transition-all"
+                  >
+                    BATAL
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SIDEBAR DETAIL */}
           <div className="w-full md:w-[320px] bg-slate-50 border-r border-slate-100 p-8 flex flex-col overflow-y-auto shrink-0">
             <div className="flex justify-center mb-6">
               <div className="relative group">
@@ -193,11 +221,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 {participant.fullName}
               </h2>
               <span
-                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                  participant.paymentStatus === "paid"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-orange-100 text-orange-700"
-                }`}
+                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${participant.paymentStatus === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"}`}
               >
                 {participant.paymentStatus === "paid"
                   ? "Status: Lunas"
@@ -237,6 +261,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
             </div>
           </div>
 
+          {/* MAIN CONTENT DETAIL */}
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
             <div className="flex justify-end p-6 border-b border-slate-50">
               <button
@@ -345,6 +370,7 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
               </div>
             </div>
 
+            {/* ACTION FOOTER */}
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-4">
               <button
                 onClick={onClose}
@@ -357,19 +383,19 @@ const DetailModal = ({ participant, onClose, onRefresh }) => {
                 <button
                   onClick={handleVerifyPayment}
                   disabled={isProcessing}
-                  className="px-8 py-4 bg-red-600 text-white rounded-2xl text-xs font-black shadow-xl shadow-red-200 hover:bg-red-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                  className="px-8 py-4 bg-[#9B1B1B] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-red-100 hover:bg-red-700 hover:-translate-y-1 transition-all active:scale-95 flex items-center gap-2 disabled:opacity-50"
                 >
                   <BadgeCheck size={18} /> VERIFIKASI LUNAS
                 </button>
               ) : !participant.isCheckedIn ? (
                 <button
                   onClick={handleCheckIn}
-                  className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-xs font-black shadow-xl shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
+                  className="px-8 py-4 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-black transition-all flex items-center gap-2"
                 >
-                  <CheckCircle size={18} /> KONFIRMASI HADIRR
+                  <CheckCircle size={18} /> KONFIRMASI HADIR
                 </button>
               ) : (
-                <div className="px-8 py-4 bg-emerald-50 text-emerald-700 rounded-2xl text-xs font-black border border-emerald-100 flex items-center gap-2 italic">
+                <div className="px-8 py-4 bg-emerald-50 text-emerald-700 rounded-2xl text-[10px] font-black border border-emerald-100 flex items-center gap-2 italic">
                   <CheckCircle size={18} /> TERVERIFIKASI HADIR
                 </div>
               )}
