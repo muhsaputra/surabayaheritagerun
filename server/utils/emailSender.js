@@ -9,164 +9,133 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAILSENDER,
     pass: process.env.PASSWORDSENDER,
   },
+  // Optimasi pool agar pengiriman massal pada 23 Feb tidak kena limit
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
 });
 
 exports.sendTicketEmail = async (participant) => {
   try {
-    // 1. Generate QR Code dengan kontras tinggi (Biru Tua Gelap)
+    // 1. Generate QR Code - High Quality & High Contrast
     const qrCodeDataURL = await QRCode.toDataURL(participant._id.toString(), {
       errorCorrectionLevel: "H",
       margin: 1,
-      width: 400,
+      width: 600, // Ukuran lebih besar agar tajam di layar HP
       color: {
-        dark: "#0F172A",
+        dark: "#1B4D3E", // Menggunakan Emerald Green gelap (Identitas Heritage)
         light: "#FFFFFF",
       },
     });
     const base64Data = qrCodeDataURL.split(",")[1];
 
-    // Data Statis Event (Sesuai update terakhir)
     const eventDayDate = "Minggu, 24 Mei 2026";
     const flagOffTime = "06.00 WIB";
     const venueName = "Plaza Internatio";
     const startFinishLocation = "Jl. Garuda, Surabaya";
 
-    // 2. TEMPLATE HTML (SWISS HERITAGE STYLE)
+    // 2. TEMPLATE HTML (UPGRADED HERITAGE RED)
     const emailContent = `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-          body { margin: 0; padding: 0; background-color: #F1F5F9; font-family: 'Inter', Arial, sans-serif; -webkit-font-smoothing: antialiased; }
-          .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-          
-          .header { background-color: #0F172A; padding: 40px 20px; text-align: center; border-bottom: 5px solid #DC2626; }
-          .header h1 { margin: 0; color: #ffffff; font-size: 26px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-          .header p { margin: 5px 0 0; color: #94A3B8; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; }
-
-          .content { padding: 30px; }
-          .user-greeting { text-align: center; margin-bottom: 25px; }
-          .user-greeting h2 { color: #0F172A; margin: 0; font-size: 24px; font-weight: 800; }
-          .status-badge { display: inline-block; background-color: #DCFCE7; color: #16A34A; padding: 6px 14px; border-radius: 99px; font-size: 11px; font-weight: 800; margin-top: 10px; text-transform: uppercase; }
-
-          .ticket-card { border: 2px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
-          .ticket-head { background-color: #F8FAFC; padding: 18px 20px; border-bottom: 1px dashed #CBD5E1; }
-          
-          .info-table { width: 100%; border-collapse: collapse; }
-          .info-td { padding: 15px 20px; border-bottom: 1px dashed #CBD5E1; vertical-align: top; }
-          .label { font-size: 10px; color: #64748B; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px; }
-          .value { font-size: 15px; color: #0F172A; font-weight: 700; display: block; }
-          .value-red { color: #DC2626; font-size: 24px; font-weight: 900; }
-
-          .qr-section { text-align: center; padding: 35px 20px; background-color: #ffffff; }
-          .qr-wrapper { display: inline-block; padding: 12px; border: 3px solid #0F172A; border-radius: 16px; background: #ffffff; }
-          .qr-img { width: 200px; height: 200px; display: block; }
-
-          .footer { background-color: #0F172A; padding: 30px 20px; text-align: center; color: #94A3B8; font-size: 11px; line-height: 1.6; }
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;700;900&display=swap');
+          /* CSS Styles updated to use Heritage Maroon & Gold */
         </style>
       </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>SURABAYA <span style="color: #DC2626;">HERITAGE</span> RUN</h1>
-            <p>Official E-Ticket 2026</p>
+      <body style="margin: 0; padding: 0; background-color: #FDFBF7; font-family: 'Inter', Helvetica, Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; border: 1px solid #E5E7EB;">
+          
+          <div style="background-color: #450a0a; padding: 40px 20px; text-align: center; border-bottom: 6px solid #D4AF37;">
+            <h1 style="margin: 0; color: #ffffff; font-family: 'Playfair Display', serif; font-size: 28px; letter-spacing: 2px;">SURABAYA <span style="color: #D4AF37;">HERITAGE</span> RUN</h1>
+            <p style="margin: 8px 0 0; color: #D4AF37; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; font-weight: bold;">Official E-Ticket 2026</p>
           </div>
 
-          <div class="content">
-            <div class="user-greeting">
-              <h2>Halo, ${participant.fullName}!</h2>
-              <div class="status-badge">PEMBAYARAN TELAH DIVERIFIKASI</div>
-              <p style="color: #64748B; font-size: 14px; margin-top: 12px;">Selamat! Pendaftaran Anda telah dikonfirmasi.<br>Simpan e-ticket ini untuk pengambilan Race Pack.</p>
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 35px;">
+              <h2 style="color: #1B4D3E; margin: 0; font-family: 'Playfair Display', serif; font-size: 26px;">Halo, ${participant.fullName}!</h2>
+              <div style="display: inline-block; background-color: #F0FDF4; color: #16A34A; padding: 8px 18px; border-radius: 99px; font-size: 11px; font-weight: 800; margin-top: 15px; border: 1px solid #BBF7D0;">PEMBAYARAN TERVERIFIKASI</div>
             </div>
 
-            <div class="ticket-card">
-              <div class="ticket-head">
-                <table width="100%" cellpadding="0" cellspacing="0">
+            <div style="border: 2px solid #F3F4F6; border-radius: 20px; overflow: hidden;">
+              <div style="background-color: #F9FAFB; padding: 25px; border-bottom: 2px dashed #E5E7EB;">
+                <table width="100%">
                   <tr>
-                    <td><span class="label">KATEGORI LARI</span><span class="value" style="color:#DC2626; font-size: 18px;">${participant.category} RUN</span></td>
-                    <td align="right"><span class="label">NOMOR BIB</span><span class="value-red">#${participant.bibNumber || "---"}</span></td>
+                    <td>
+                        <p style="font-size: 10px; color: #6B7280; font-weight: bold; margin: 0; text-transform: uppercase;">Kategori Lari</p>
+                        <p style="font-size: 20px; color: #9B1B1B; font-weight: 900; margin: 4px 0 0;">${participant.category} RUN</p>
+                    </td>
+                    <td align="right">
+                        <p style="font-size: 10px; color: #6B7280; font-weight: bold; margin: 0; text-transform: uppercase;">Nomor BIB</p>
+                        <p style="font-size: 32px; color: #1B4D3E; font-weight: 900; margin: 4px 0 0;">#${participant.bibNumber}</p>
+                    </td>
                   </tr>
                 </table>
               </div>
 
-              <table class="info-table" width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td class="info-td" width="55%">
-                    <span class="label">HARI & TANGGAL</span>
-                    <span class="value">${eventDayDate}</span>
-                  </td>
-                  <td class="info-td" width="45%">
-                    <span class="label">FLAG OFF</span>
-                    <span class="value">${flagOffTime}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="info-td">
-                    <span class="label">TEMPAT (VENUE)</span>
-                    <span class="value">${venueName}</span>
-                  </td>
-                  <td class="info-td">
-                    <span class="label">START / FINISH</span>
-                    <span class="value">${startFinishLocation}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="info-td" style="border-bottom: none;">
-                    <span class="label">UKURAN JERSEY</span>
-                    <span class="value">${participant.jerseySize}</span>
-                  </td>
-                  <td class="info-td" style="border-bottom: none;">
-                    <span class="label">STATUS TIKET</span>
-                    <span class="value" style="color: #16A34A;">PAID / LUNAS</span>
-                  </td>
-                </tr>
-              </table>
+              <div style="padding: 25px;">
+                <table width="100%" style="font-size: 13px;">
+                  <tr>
+                    <td style="padding-bottom: 20px;">
+                        <span style="display:block; font-size: 9px; color: #9CA3AF; font-weight: bold; text-transform: uppercase;">Waktu Start</span>
+                        <span style="font-weight: 700; color: #1F2937;">${eventDayDate} | ${flagOffTime}</span>
+                    </td>
+                    <td style="padding-bottom: 20px;">
+                        <span style="display:block; font-size: 9px; color: #9CA3AF; font-weight: bold; text-transform: uppercase;">Lokasi</span>
+                        <span style="font-weight: 700; color: #1F2937;">${venueName}</span>
+                    </td>
+                  </tr>
+                </table>
 
-              <div class="qr-section">
-                <div class="qr-wrapper">
-                  <img src="cid:qrcode_ticket" alt="QR Code" class="qr-img" />
+                <div style="text-align: center; padding-top: 20px;">
+                  <div style="display: inline-block; padding: 15px; border: 2px solid #1B4D3E; border-radius: 20px; background: #ffffff;">
+                    <img src="cid:qrcode_ticket" width="220" height="220" style="display: block;" />
+                  </div>
+                  <p style="margin-top: 20px; font-weight: 900; color: #1B4D3E; font-size: 14px; letter-spacing: 1px;">SCAN QR UNTUK RACE PACK</p>
                 </div>
-                <p style="margin: 20px 0 5px; font-weight: 800; color: #0F172A; font-size: 14px; text-transform: uppercase;">SCAN SAAT PENGAMBILAN RACE PACK</p>
-                <p style="color: #94A3B8; font-size: 10px; font-family: monospace;">ID: ${participant._id}</p>
               </div>
             </div>
           </div>
 
-          <div class="footer">
-            <p style="margin: 0 0 10px; font-weight: bold; color: #ffffff;">Surabaya Heritage Run 2026</p>
-            <p style="margin: 0;">Mohon tunjukkan e-ticket ini beserta KTP asli saat pengambilan Race Pack Collection (RPC). Informasi jadwal RPC akan diumumkan melalui Instagram kami.</p>
-            <p style="margin: 15px 0 0;">&copy; 2026 Surabaya Heritage Run. All rights reserved.</p>
+          <div style="background-color: #0F172A; padding: 35px 30px; text-align: center;">
+            <p style="color: #ffffff; font-size: 12px; margin: 0 0 10px; font-weight: bold;">Surabaya Heritage Run 2026</p>
+            <p style="color: #94A3B8; font-size: 10px; line-height: 1.8;">Bawa E-Ticket ini & KTP asli saat pengambilan perlengkapan lari. Sampai jumpa di garis start, Pahlawan!</p>
           </div>
         </div>
       </body>
       </html>
     `;
 
-    // 3. Konfigurasi Pengiriman
+    // 3. Konfigurasi Pengiriman dengan Header Tambahan
     const mailOptions = {
       from: `"Surabaya Heritage Run" <${process.env.EMAILSENDER}>`,
       to: participant.email,
-      // Subject yang sangat informatif agar peserta langsung tahu nomor BIB mereka
-      subject: `[E-TICKET] #${participant.bibNumber} - ${participant.fullName} (${participant.category})`,
+      subject: `E-Ticket #${participant.bibNumber} - ${participant.fullName} (${participant.category})`,
+      text: `Halo ${participant.fullName}, Pembayaran Anda Berhasil. Nomor BIB Anda: #${participant.bibNumber}. Silakan cek email ini di device yang mendukung HTML untuk melihat QR Ticket Anda.`,
       html: emailContent,
       attachments: [
         {
-          filename: `ticket-${participant.bibNumber}.png`,
+          filename: `BIB-${participant.bibNumber}.png`,
           content: base64Data,
           encoding: "base64",
-          cid: "qrcode_ticket", // CID untuk menampilkan gambar di body HTML
+          cid: "qrcode_ticket",
         },
       ],
+      // Menandai sebagai email penting agar tidak masuk Tab Promotion/Spam
+      priority: "high",
+      headers: {
+        "X-Priority": "1 (Highest)",
+        "X-MSMail-Priority": "High",
+      },
     };
 
     await transporter.sendMail(mailOptions);
     console.log(
-      `✅ Email Tiket (#${participant.bibNumber}) Berhasil Terkirim ke ${participant.email}`,
+      `✅ Tiket #${participant.bibNumber} terkirim ke ${participant.email}`,
     );
   } catch (error) {
-    console.error("❌ Gagal Mengirim Email Tiket:", error);
+    console.error("❌ Email Error:", error);
   }
 };
