@@ -307,114 +307,152 @@ const LandingPage = () => {
       </div>
 
       {/* --- KATEGORI LARI --- */}
+      {/* --- KATEGORI LARI: HERITAGE REDESIGN --- */}
       <div className="relative py-32 overflow-hidden bg-[#FDFBF7]">
-        {/* Background Section with Bold Heritage Overlay */}
+        {/* Background Section with Deep Heritage Overlay */}
         <div className="absolute inset-0 z-0">
           <img
             src={heroImage}
             alt="Background Surabaya Heritage"
             loading="lazy"
-            className="w-full h-full object-cover object-center grayscale-[30%] opacity-40"
+            className="w-full h-full object-cover object-center grayscale-[40%] opacity-30"
           />
-          {/* Deep Maroon & Gradient Overlay */}
-          <div className="absolute inset-0 z-0 bg-[#450a0a]/90 mix-blend-multiply"></div>
+          {/* Overlay: Deep Maroon Gradient untuk Kedalaman Visual */}
+          <div className="absolute inset-0 z-0 bg-[#450a0a]/95 mix-blend-multiply"></div>
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#450a0a] via-transparent to-[#450a0a]"></div>
         </div>
 
-        {/* Header Section */}
+        {/* Header Section: Typography Classic */}
         <div className="text-center px-4 max-w-4xl mx-auto mb-20 relative z-10">
-          <span className="text-[#D4AF37] font-sans font-bold tracking-[0.4em] uppercase text-xs mb-4 block">
-            Semangat Keberanian Kota Pahlawan
-          </span>
-          <h2 className="text-5xl md:text-6xl font-serif font-bold text-white mb-6 drop-shadow-2xl">
-            Pilih Kategori <span className="italic text-[#D4AF37]">Run</span>
-          </h2>
-          <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-8"></div>
-          <p className="text-stone-300 text-lg font-light max-w-2xl mx-auto leading-relaxed font-sans">
-            Satu fasilitas premium untuk semua pelari. Tanpa perbedaan, tanpa
-            pengecualian.
-            <br className="hidden md:block" />
-            <span className="text-[#D4AF37] font-serif italic mt-3 block text-xl">
-              "Merah keberanian, emas kejayaan."
+          <div className="inline-block mb-4">
+            <span className="text-[#D4AF37] font-sans font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs bg-white/5 px-4 py-2 rounded-full border border-[#D4AF37]/20 backdrop-blur-sm">
+              The Soul of Surabaya
             </span>
+          </div>
+          <h2 className="text-5xl md:text-7xl font-serif font-black text-white mb-6 drop-shadow-2xl tracking-tight">
+            Kategori <span className="italic text-[#D4AF37]">Run</span>
+          </h2>
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="w-12 h-[1px] bg-[#D4AF37]/50"></div>
+            <Trophy className="text-[#D4AF37]" size={24} />
+            <div className="w-12 h-[1px] bg-[#D4AF37]/50"></div>
+          </div>
+          <p className="text-stone-300 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed font-sans">
+            Menelusuri jejak heroisme melalui rute ikonik kota tua. Pilih
+            tantanganmu dan jadilah bagian dari sejarah.
           </p>
         </div>
 
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <div className="flex flex-col md:flex-row justify-center gap-10">
-            {/* 5K Category - The Hero Maroon Card */}
-            <div className="group relative bg-[#9B1B1B] p-1 rounded-[2.5rem] flex-1 shadow-[0_20px_50px_rgba(155,27,27,0.3)] transition-all duration-500 hover:-translate-y-3">
-              <div className="bg-[#9B1B1B] p-10 rounded-[2rem] h-full flex flex-col border border-[#D4AF37]/40">
-                <div className="mb-8 flex justify-between items-start">
-                  <span className="bg-[#D4AF37] text-[#450a0a] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+            {/* 5K Category - The "Heroic Maroon" Card */}
+            <div className="group relative bg-[#9B1B1B] p-[2px] rounded-[2.5rem] flex-1 shadow-[0_30px_60px_-15px_rgba(155,27,27,0.5)] transition-all duration-500 hover:-translate-y-4">
+              <div className="bg-[#9B1B1B] p-10 rounded-[2.4rem] h-full flex flex-col border border-[#D4AF37]/30">
+                <div className="mb-10 flex justify-between items-start">
+                  <div className="bg-[#D4AF37] text-[#450a0a] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
                     Most Popular
-                  </span>
-                  <Medal className="text-[#D4AF37]/60" size={32} />
+                  </div>
+                  <Medal className="text-[#D4AF37] animate-pulse" size={36} />
                 </div>
 
-                <h3 className="text-7xl font-serif font-bold text-[#D4AF37] mb-2 leading-none">
-                  5K
-                </h3>
-                <p className="text-white/80 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
-                  Heritage Professional Run
-                </p>
+                <div className="mb-8">
+                  <h3 className="text-8xl font-serif font-black text-[#D4AF37] mb-2 leading-none tracking-tighter">
+                    5K
+                  </h3>
+                  <p className="text-white font-sans font-bold tracking-[0.3em] uppercase text-[11px] opacity-80">
+                    Heritage Professional Run
+                  </p>
+                </div>
+
+                <div className="space-y-4 mb-10">
+                  {[
+                    "Medali Finisher",
+                    "Jersey Eksklusif",
+                    "BIB Number",
+                    "Refreshment",
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 text-white/70 text-sm"
+                    >
+                      <CheckCircle size={16} className="text-[#D4AF37]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
 
                 <div className="border-t border-[#D4AF37]/20 pt-8 mt-auto">
-                  <p className="text-[#D4AF37]/70 text-[10px] font-bold uppercase tracking-widest mb-2">
-                    Biaya Registrasi
+                  <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mb-2">
+                    Investment Fee
                   </p>
                   <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-5xl font-serif font-bold text-white">
+                    <span className="text-6xl font-serif font-black text-white">
                       {formatPrice(activePrices["5K"])}
                     </span>
-                    <span className="text-white/40 text-xs font-light">
+                    <span className="text-white/40 text-sm font-light">
                       / pax
                     </span>
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-[#D4AF37] text-[#450a0a] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-white transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_15px_30px_-10px_rgba(212,175,55,0.4)]"
+                    className="w-full py-5 bg-[#D4AF37] text-[#450a0a] font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-white hover:scale-[1.02] transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_15px_30px_-10px_rgba(212,175,55,0.6)]"
                   >
-                    Daftar Sekarang <ArrowRight size={18} />
+                    Amankan Slot <ArrowRight size={18} strokeWidth={3} />
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* 3K Category - The Light Antique Card */}
-            <div className="group relative bg-[#FDFBF7] p-1 rounded-[2.5rem] flex-1 shadow-xl transition-all duration-500 hover:-translate-y-3">
-              <div className="bg-[#FDFBF7] p-10 rounded-[2rem] h-full flex flex-col border border-stone-200">
-                <div className="mb-8 flex justify-between items-start">
-                  <span className="bg-[#9B1B1B]/10 text-[#9B1B1B] px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border border-[#9B1B1B]/20">
+            {/* 3K Category - The "Antique Cream" Card */}
+            <div className="group relative bg-white p-[2px] rounded-[2.5rem] flex-1 shadow-2xl transition-all duration-500 hover:-translate-y-4">
+              <div className="bg-[#FDFBF7] p-10 rounded-[2.4rem] h-full flex flex-col border border-stone-200">
+                <div className="mb-10 flex justify-between items-start">
+                  <div className="bg-stone-100 text-[#9B1B1B] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-stone-200">
                     Family Friendly
-                  </span>
-                  <Users className="text-stone-300" size={32} />
+                  </div>
+                  <Users className="text-stone-300" size={36} />
                 </div>
 
-                <h3 className="text-7xl font-serif font-bold text-[#9B1B1B] mb-2 leading-none">
-                  3K
-                </h3>
-                <p className="text-stone-400 font-sans font-bold tracking-[0.2em] uppercase text-xs mb-8">
-                  Heritage Fun Walk
-                </p>
+                <div className="mb-8">
+                  <h3 className="text-8xl font-serif font-black text-[#9B1B1B] mb-2 leading-none tracking-tighter">
+                    3K
+                  </h3>
+                  <p className="text-stone-400 font-sans font-bold tracking-[0.3em] uppercase text-[11px]">
+                    Heritage Fun Walk
+                  </p>
+                </div>
 
-                <div className="border-t border-stone-100 pt-8 mt-auto">
+                <div className="space-y-4 mb-10 text-stone-600">
+                  {[
+                    "Medali Finisher",
+                    "Jersey Eksklusif",
+                    "BIB Number",
+                    "Refreshment",
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm">
+                      <CheckCircle size={16} className="text-[#9B1B1B]" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-stone-200 pt-8 mt-auto">
                   <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-2">
-                    Biaya Registrasi
+                    Investment Fee
                   </p>
                   <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-5xl font-serif font-bold text-[#9B1B1B]">
+                    <span className="text-6xl font-serif font-black text-[#9B1B1B]">
                       {formatPrice(activePrices["3K"])}
                     </span>
-                    <span className="text-stone-400 text-xs font-light">
+                    <span className="text-stone-400 text-sm font-light">
                       / pax
                     </span>
                   </div>
                   <button
                     onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-white border-2 border-[#9B1B1B] text-[#9B1B1B] font-bold text-sm uppercase tracking-widest rounded-xl hover:bg-[#9B1B1B] hover:text-white transition-all duration-300 flex justify-center items-center gap-3"
+                    className="w-full py-5 bg-white border-2 border-[#9B1B1B] text-[#9B1B1B] font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-[#9B1B1B] hover:text-white hover:scale-[1.02] transition-all duration-300 flex justify-center items-center gap-3"
                   >
-                    Daftar 3K <ArrowRight size={18} />
+                    Daftar 3K <ArrowRight size={18} strokeWidth={3} />
                   </button>
                 </div>
               </div>
