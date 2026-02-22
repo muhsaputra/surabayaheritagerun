@@ -174,7 +174,7 @@ const CheckStatusPage = () => {
             ) : (
               <Zap size={16} className="fill-current" />
             )}
-            SEMAK
+            Check
           </button>
         </div>
 
