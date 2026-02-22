@@ -25,6 +25,7 @@ import {
   Star,
   Verified,
   IdCard,
+  Crown,
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
