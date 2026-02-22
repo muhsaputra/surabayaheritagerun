@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 
 // --- IMPORT ASSETS (LOGO) ---
-// Pastikan path ini sesuai dengan lokasi penyimpanan file logo Anda
 import logoImage from "../src/assets/images/Logo/SurabayaHeritage.png";
 
 // --- IMPORT HALAMAN ---
@@ -18,6 +17,10 @@ import AdminDashboard from "./components/admin/AdminDashboard";
 import PaymentPage from "./components/PaymentPage";
 import AdminLogin from "./components/AdminLogin";
 import CheckStatusPage from "./components/CheckStatusPage";
+
+// IMPORT HALAMAN BARU
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import ContactSupportPage from "./components/ContactSupportPage";
 
 // --- KOMPONEN PROTEKSI (GATEKEEPER) ---
 const ProtectedRoute = ({ children }) => {
@@ -40,9 +43,6 @@ function App() {
         <Routes>
           <Route path="/login" element={null} />
           <Route path="/admin" element={null} />
-          {/* Untuk Landing Page ( / ) Anda bisa memilih untuk menyembunyikan header global ini 
-              jika LandingPage sudah punya Navbar sendiri, atau membiarkannya. 
-              Di sini saya membiarkannya tampil sebagai default. */}
           <Route
             path="*"
             element={
@@ -51,7 +51,6 @@ function App() {
                   to="/"
                   className="inline-block hover:scale-105 transition-transform cursor-pointer"
                 >
-                  {/* UPDATE: Menggunakan Gambar Logo */}
                   <img
                     src={logoImage}
                     alt="Logo Surabaya Heritage Run"
@@ -66,24 +65,30 @@ function App() {
         {/* =========================================
             2. MAIN CONTENT ROUTES
            ========================================= */}
-        <Routes>
-          {/* --- HALAMAN PUBLIK --- */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/register" element={<RegistrationForm />} />
-          <Route path="/payment" element={<PaymentPage />} />
-          <Route path="/check-status" element={<CheckStatusPage />} />
+        <main className="flex-grow">
+          <Routes>
+            {/* --- HALAMAN PUBLIK --- */}
+            <Route path="/" element={<Landing />} />
+            <Route path="/register" element={<RegistrationForm />} />
+            <Route path="/payment" element={<PaymentPage />} />
+            <Route path="/check-status" element={<CheckStatusPage />} />
 
-          {/* --- HALAMAN ADMIN --- */}
-          <Route path="/login" element={<AdminLogin />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+            {/* RUTE BARU */}
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/contact-support" element={<ContactSupportPage />} />
+
+            {/* --- HALAMAN ADMIN --- */}
+            <Route path="/login" element={<AdminLogin />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </main>
 
         {/* =========================================
             3. FOOTER
