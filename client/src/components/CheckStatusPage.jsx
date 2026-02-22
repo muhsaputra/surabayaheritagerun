@@ -263,7 +263,7 @@ const CheckStatusPage = () => {
                     <span className="text-[8px] md:text-[9px] font-black uppercase opacity-60 tracking-[0.2em] mb-1 block">
                       Jersey Size
                     </span>
-                    <p className="text-xl md:text-5xl font-black uppercase leading-none">
+                    <p className="text-xl md:text-2xl font-black uppercase leading-none">
                       {result.jerseySize}
                     </p>
                   </div>
