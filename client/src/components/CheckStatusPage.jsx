@@ -19,22 +19,15 @@ import {
   History,
   ShieldCheck,
   Check,
-  Fingerprint,
   Zap,
   Ticket,
   Star,
   Verified,
-  IdCard,
-  Crown,
+  Fingerprint,
 } from "lucide-react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 
-/**
- * SURABAYA HERITAGE RUN 2026 - HALAMAN CEK STATUS PESERTA
- * Dioptimalkan untuk hasil PDF A4 yang presisi dan Tipografi yang konsisten.
- */
 const CheckStatusPage = () => {
-  // --- MANAJEMEN STATE ---
   const [email, setEmail] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -43,42 +36,29 @@ const CheckStatusPage = () => {
   const [isTicketLoaded, setIsTicketLoaded] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
 
-  // --- NAVIGASI & KONTEKS ---
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const ticketRef = useRef(null);
 
-  // --- INISIALISASI ---
   useEffect(() => {
     let autoEmail = location.state?.email || searchParams.get("email");
     if (autoEmail) setEmail(autoEmail);
   }, [location, searchParams]);
 
-  /**
-   * Efek Selebrasi Konfeti untuk Status Lunas
-   */
   const fireConfetti = () => {
-    const scalar = 2;
-    const triangle = confetti.shapeFromPath({ path: "M0 10 L5 0 L10 10z" });
-
     confetti({
-      shapes: [triangle],
       particleCount: 150,
-      spread: 100,
+      spread: 70,
       origin: { y: 0.6 },
       colors: ["#7B1818", "#D4AF37", "#0F172A"],
-      zIndex: 9999,
     });
   };
 
-  /**
-   * Handler API - Cari Status Peserta
-   */
   const handleCheck = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError("Silakan masukkan alamat email pendaftaran Anda.");
+      setError("Masukkan email pendaftaran Anda.");
       return;
     }
 
@@ -95,9 +75,9 @@ const CheckStatusPage = () => {
         const data = res.data.data;
         setResult(data);
 
-        // Generate QR Code resolusi tinggi hitam pekat agar pasti muncul di PDF
+        // FIX: Generate QR sebagai Base64 murni agar terbaca di PDF Mobile
         const qrUrl = await QRCode.toDataURL(data._id, {
-          width: 1000,
+          width: 800,
           margin: 1,
           color: { dark: "#000000", light: "#FFFFFF" },
         });
@@ -109,30 +89,27 @@ const CheckStatusPage = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Data tidak ditemukan. Pastikan email Anda sudah benar.",
+          "Data tidak ditemukan. Pastikan email Anda benar.",
       );
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * Generator PDF Resolusi Tinggi Skala A4 Presisi
-   */
   const handleDownloadPDF = async () => {
     if (!ticketRef.current || !result) return;
     setDownloading(true);
 
     try {
-      // Tunggu render visual stabil sebelum snapshot
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      // Jeda krusial agar sinkronisasi render gambar di peramban selesai
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const canvas = await html2canvas(ticketRef.current, {
-        scale: 4, // Kualitas Ultra-HD agar teks tajam
+        scale: 3, // Skala 3 cukup tajam namun ringan untuk HP
         useCORS: true,
         backgroundColor: "#ffffff",
         logging: false,
-        windowWidth: 850, // Mengunci lebar render untuk konsistensi proporsi A4
+        windowWidth: 800,
       });
 
       const imgData = canvas.toDataURL("image/jpeg", 1.0);
@@ -156,10 +133,9 @@ const CheckStatusPage = () => {
         undefined,
         "FAST",
       );
-      pdf.save(`SHR2026_Tiket_${result.fullName.replace(/\s+/g, "_")}.pdf`);
+      pdf.save(`Tiket_SHR2026_${result.fullName.split(" ")[0]}.pdf`);
     } catch (err) {
-      console.error("PDF Generate Error:", err);
-      alert("Gagal mengunduh PDF. Silakan gunakan tangkapan layar.");
+      alert("Terjadi kesalahan saat mengunduh PDF.");
     } finally {
       setDownloading(false);
     }
@@ -168,40 +144,34 @@ const CheckStatusPage = () => {
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans text-[#0F172A] overflow-x-hidden selection:bg-[#7B1818] selection:text-white">
       {/* ------------------- HEADER ------------------- */}
-      <div className="relative h-[25vh] md:h-[35vh] bg-[#7B1818] rounded-b-[4rem] md:rounded-b-[6rem] overflow-hidden shadow-[0_20px_50px_rgba(123,24,24,0.3)] transition-all duration-1000">
+      <div className="relative h-[25vh] md:h-[30vh] bg-[#7B1818] rounded-b-[3rem] overflow-hidden shadow-2xl transition-all duration-1000">
         <div className="absolute inset-0 opacity-15 bg-[url('https://www.transparenttextures.com/patterns/pinstriped-suit.png')]"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#7B1818]/40"></div>
-
-        <div className="relative z-10 max-w-5xl mx-auto px-6 pt-12 text-center flex flex-col items-center animate-fade-in-up">
+        <div className="relative z-10 max-w-4xl mx-auto px-6 pt-10 text-center flex flex-col items-center">
           <button
             onClick={() => navigate("/")}
-            className="mb-8 bg-white/10 hover:bg-white/25 text-white border border-white/20 px-6 py-2 rounded-full backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] group"
+            className="mb-6 bg-white/10 hover:bg-white/20 text-white border border-white/20 px-4 py-1.5 rounded-full backdrop-blur-md transition-all flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest group"
           >
             <ArrowLeft
               size={14}
               className="group-hover:-translate-x-1 transition-transform"
             />{" "}
-            Kembali
+            Beranda
           </button>
-
-          <div className="flex flex-col items-center gap-3 mb-2">
-            <Ticket className="text-[#D4AF37]" size={32} />
-            <h1 className="text-3xl md:text-6xl font-black text-white uppercase tracking-tighter leading-none">
-              Status <span className="text-[#D4AF37]">Pendaftaran</span>
+          <div className="flex flex-col items-center gap-2 mb-1">
+            <Ticket className="text-[#D4AF37]" size={28} />
+            <h1 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter">
+              Status <span className="text-[#D4AF37]">Peserta</span>
             </h1>
           </div>
-          <p className="text-white/60 text-xs md:text-sm font-medium tracking-widest uppercase opacity-80">
-            Heritage Pass Verification Engine
-          </p>
         </div>
       </div>
 
-      {/* ------------------- SEARCH CONSOLE ------------------- */}
-      <div className="max-w-xl mx-auto px-4 md:px-6 -mt-10 md:-mt-14 relative z-20 pb-20">
-        <div className="bg-white/95 backdrop-blur-2xl p-2 md:p-3 rounded-full shadow-[0_30px_60px_rgba(0,0,0,0.12)] mb-12 flex flex-col md:flex-row gap-2 border border-white/60 group transition-all hover:shadow-[0_30px_60px_rgba(123,24,24,0.15)]">
+      {/* ------------------- SEARCH FORM ------------------- */}
+      <div className="max-w-xl mx-auto px-4 md:px-6 -mt-8 md:-mt-12 relative z-20 pb-20">
+        <div className="bg-white/95 backdrop-blur-2xl p-2 rounded-full shadow-2xl mb-12 flex flex-col md:flex-row gap-2 border border-white/50">
           <div className="relative flex-1">
             <Search
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 transition-colors group-hover:text-[#7B1818]"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"
               size={18}
             />
             <input
@@ -209,331 +179,229 @@ const CheckStatusPage = () => {
               placeholder="Masukkan email pendaftaran..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCheck(e)}
-              className="w-full pl-14 pr-5 py-4 rounded-full bg-transparent border-none focus:ring-0 text-sm font-semibold text-[#0F172A] placeholder:text-slate-300"
+              className="w-full pl-14 pr-5 py-4 rounded-full bg-transparent border-none focus:ring-0 text-sm font-medium"
             />
           </div>
           <button
             type="submit"
             onClick={handleCheck}
             disabled={loading}
-            className="bg-[#7B1818] hover:bg-black text-white font-bold px-10 py-4 rounded-full transition-all disabled:opacity-70 flex items-center justify-center gap-3 text-[11px] uppercase tracking-[0.2em] shadow-lg active:scale-95"
+            className="bg-[#7B1818] hover:bg-black text-white font-bold px-10 py-4 rounded-full transition-all disabled:opacity-70 flex items-center justify-center gap-3 text-xs uppercase tracking-[0.15em] shadow-lg active:scale-95"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={16} />
             ) : (
               <Zap size={16} className="fill-current" />
-            )}
-            {loading ? "Mencari..." : "Cek Status"}
+            )}{" "}
+            Cek
           </button>
         </div>
 
         {error && (
-          <div className="mb-10 p-5 bg-red-50 border border-red-100 rounded-3xl text-red-600 flex items-center gap-4 animate-fade-in-up">
-            <div className="bg-red-500 text-white p-2 rounded-xl">
-              <AlertCircle size={20} />
-            </div>
+          <div className="mb-10 p-5 bg-red-50 border border-red-100 rounded-2xl text-red-600 flex items-center gap-4 animate-fade-in-up">
+            <AlertCircle size={20} />{" "}
             <p className="font-bold text-xs">{error}</p>
           </div>
         )}
 
-        {/* ------------------- PREMIUM TICKET UI ------------------- */}
+        {/* ------------------- TICKET AREA (A4 PROPORTION) ------------------- */}
         {result && (
           <div
             className={`transition-all duration-1000 transform ${isTicketLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
           >
-            <div className="p-1 md:p-3 bg-transparent">
-              <div
-                ref={ticketRef}
-                className="bg-white rounded-[3rem] md:rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden mb-10 border border-slate-100 relative"
-                style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}
-              >
-                {/* BRANDED HEADER */}
-                <div className="bg-[#7B1818] pt-14 pb-10 px-10 text-center relative overflow-hidden">
+            <div
+              ref={ticketRef}
+              className="bg-white p-4 md:p-8 overflow-hidden"
+            >
+              <div className="bg-white rounded-[2.5rem] shadow-[0_15px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-slate-100">
+                {/* Header */}
+                <div className="bg-[#7B1818] pt-10 pb-8 px-10 text-center relative overflow-hidden">
                   <div className="absolute inset-0 opacity-15 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
                   <div className="relative z-10 flex flex-col items-center">
-                    <div className="mb-5 bg-white/10 p-3.5 rounded-2xl backdrop-blur-lg border border-white/20">
-                      <Trophy className="text-[#D4AF37]" size={40} />
-                    </div>
-                    <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-[0.3em] mb-2 leading-none drop-shadow-md">
+                    <Trophy className="text-[#D4AF37] mb-3" size={32} />
+                    <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-[0.25em] mb-1">
                       SURABAYA <span className="text-[#D4AF37]">HERITAGE</span>{" "}
                       RUN
                     </h2>
-                    <div className="flex items-center gap-5 w-full justify-center opacity-80">
-                      <div className="h-[1px] w-12 bg-gradient-to-l from-[#D4AF37] to-transparent"></div>
-                      <p className="text-[#D4AF37] text-[10px] md:text-[11px] font-black tracking-[0.5em] uppercase whitespace-nowrap">
-                        PAS MASUK RESMI • 2026
-                      </p>
-                      <div className="h-[1px] w-12 bg-gradient-to-r from-[#D4AF37] to-transparent"></div>
-                    </div>
+                    <p className="text-[#D4AF37] text-[8px] md:text-[10px] font-black tracking-[0.4em] uppercase">
+                      Pas Masuk Resmi • 2026
+                    </p>
                   </div>
                 </div>
 
-                {/* TICKET BODY */}
-                <div className="px-10 md:px-16 py-12 md:py-14 bg-white relative">
-                  {/* Runner Info Section */}
-                  <div className="flex flex-col md:flex-row justify-between items-start gap-10 mb-14 border-b border-slate-100 pb-12 relative">
-                    <div className="space-y-5 w-full md:w-auto text-left">
-                      <div>
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] block mb-3">
-                          Runner Identity
-                        </span>
-                        <h3 className="text-3xl md:text-5xl font-black text-[#0F172A] uppercase leading-tight tracking-tight font-serif italic">
-                          {result.fullName}
-                        </h3>
-                      </div>
-
-                      <div className="flex items-center flex-wrap gap-4">
-                        <div
-                          className={`flex items-center gap-2 px-4 py-2 rounded-full border shadow-sm font-black text-[10px] uppercase tracking-wider ${
-                            result.paymentStatus === "paid"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              : "bg-amber-50 text-amber-600 border-amber-100"
-                          }`}
-                        >
-                          {result.paymentStatus === "paid" ? (
-                            <ShieldCheck size={14} />
-                          ) : (
-                            <Clock size={14} />
-                          )}
-                          {result.paymentStatus === "paid"
-                            ? "Pembayaran Diverifikasi"
-                            : "Menunggu Pembayaran"}
-                        </div>
-
-                        <div className="flex items-center gap-2 text-slate-400 font-bold text-[10px] uppercase bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
-                          <IdCard size={14} className="opacity-40" />{" "}
-                          {result._id.slice(-8).toUpperCase()}
+                <div className="px-8 md:px-14 py-10 bg-white">
+                  {/* Identity Row */}
+                  <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-10 border-b border-slate-50 pb-8">
+                    <div className="space-y-3">
+                      <span className="text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] block">
+                        {" "}
+                        Runner Identity
+                      </span>
+                      <h3 className="text-2xl md:text-3xl font-black text-slate-900 uppercase leading-tight font-serif italic tracking-tight">
+                        {result.fullName}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 text-emerald-600 font-black text-[9px] uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">
+                          <ShieldCheck size={12} /> Verified
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex flex-row md:flex-col items-center bg-[#FDFBF7] p-5 md:p-8 rounded-[2.5rem] md:rounded-[3.5rem] border-2 border-[#7B1818]/10 min-w-[130px] w-full md:w-auto justify-center gap-5 md:gap-1 shadow-sm">
-                      <span className="text-[9px] font-black text-[#7B1818] uppercase tracking-[0.2em] opacity-60">
+                    <div className="flex flex-col items-center bg-[#FDFBF7] p-4 rounded-[1.5rem] border-2 border-[#7B1818]/10 min-w-[100px] shadow-sm">
+                      <span className="text-[8px] font-black text-[#7B1818] uppercase tracking-widest opacity-60 mb-1">
                         Kategori
                       </span>
-                      <span className="text-4xl md:text-7xl font-black text-[#0F172A] leading-none font-sans">
+                      <span className="text-2xl md:text-4xl font-black text-slate-900 leading-none">
                         {result.category}
                       </span>
                     </div>
                   </div>
 
-                  {/* Core Data Grid */}
-                  <div className="grid grid-cols-2 gap-6 md:gap-10 mb-14">
-                    <div className="bg-[#7B1818] p-8 md:p-12 rounded-[3rem] md:rounded-[4rem] text-white relative overflow-hidden shadow-2xl shadow-[#7B1818]/20">
+                  {/* BIB & Jersey (REDUCED SIZE) */}
+                  <div className="grid grid-cols-2 gap-5 mb-10">
+                    <div className="bg-[#7B1818] p-5 md:p-6 rounded-[2rem] text-white relative overflow-hidden shadow-lg shadow-[#7B1818]/20">
                       <Hash
-                        className="absolute -right-5 -bottom-5 opacity-10 rotate-12"
-                        size={140}
+                        className="absolute -right-3 -bottom-3 opacity-10 rotate-12"
+                        size={80}
                       />
-                      <span className="text-[9px] md:text-[11px] font-black uppercase opacity-60 tracking-[0.4em] mb-3 block">
+                      <span className="text-[8px] font-black uppercase opacity-60 tracking-[0.2em] mb-1 block">
                         Nomor BIB
                       </span>
-                      <p className="text-4xl md:text-7xl font-black font-serif leading-none tracking-tighter">
+                      <p className="text-3xl md:text-4xl font-black font-serif tracking-tighter">
                         #{result.bibNumber || "PENDING"}
                       </p>
                     </div>
-
-                    <div className="bg-[#0F172A] p-8 md:p-12 rounded-[3rem] md:rounded-[4rem] text-white relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                    <div className="bg-[#0F172A] p-5 md:p-6 rounded-[2rem] text-white relative overflow-hidden shadow-lg shadow-[#0F172A]/20">
                       <Shirt
-                        className="absolute -right-5 -bottom-5 opacity-10 rotate-12"
-                        size={140}
+                        className="absolute -right-3 -bottom-3 opacity-10 rotate-12"
+                        size={80}
                       />
-                      <span className="text-[9px] md:text-[11px] font-black uppercase opacity-60 tracking-[0.4em] mb-3 block">
+                      <span className="text-[8px] font-black uppercase opacity-60 tracking-[0.2em] mb-1 block">
                         Ukuran Jersey
                       </span>
-                      <p className="text-4xl md:text-7xl font-black leading-none tracking-tighter uppercase">
+                      <p className="text-3xl md:text-4xl font-black uppercase tracking-tighter">
                         {result.jerseySize}
                       </p>
                     </div>
                   </div>
 
-                  {/* Logistic Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8 mb-14 md:mb-20">
-                    <div className="flex items-center gap-6 p-6 md:p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 group transition-all duration-500 hover:bg-white hover:shadow-lg">
-                      <div className="bg-white w-14 h-14 rounded-2xl shadow-sm text-[#7B1818] flex items-center justify-center border border-slate-50 transition-all group-hover:bg-[#7B1818] group-hover:text-white">
-                        <MapPin size={26} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
-                          Lokasi Acara
+                  {/* Schedule */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
+                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                      <MapPin size={20} className="text-[#7B1818]" />
+                      <div>
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">
+                          Race Venue
                         </p>
-                        <p className="text-sm md:text-base font-black text-slate-800 uppercase tracking-tight leading-relaxed">
-                          Plaza Internatio,
-                          <br />
-                          Surabaya
+                        <p className="text-[10px] md:text-xs font-black text-slate-800 uppercase">
+                          Plaza Internatio, SBY
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-6 p-6 md:p-8 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 group transition-all duration-500 hover:bg-white hover:shadow-lg">
-                      <div className="bg-white w-14 h-14 rounded-2xl shadow-sm text-[#7B1818] flex items-center justify-center border border-slate-50 transition-all group-hover:bg-[#7B1818] group-hover:text-white">
-                        <Calendar size={26} />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
-                          Waktu Flag-Off
+                    <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100">
+                      <Calendar size={20} className="text-[#7B1818]" />
+                      <div>
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">
+                          Start Time
                         </p>
-                        <p className="text-sm md:text-base font-black text-slate-800 font-serif tracking-tight leading-relaxed">
-                          Minggu, 24 Mei 2026
-                          <br />
-                          06:00 WIB
+                        <p className="text-[10px] md:text-xs font-black text-slate-800 uppercase">
+                          24 Mei 2026 | 06:00 WIB
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* SCAN ZONE CALIBRATION */}
-                  <div className="flex flex-col items-center pt-12 border-t-2 border-dashed border-slate-100 relative">
-                    <div className="relative group/qr">
-                      <div className="absolute -inset-6 bg-[#D4AF37]/15 rounded-[4rem] blur-2xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-700"></div>
-                      <div className="bg-white p-6 md:p-8 rounded-[3rem] md:rounded-[4rem] shadow-2xl border border-slate-50 mb-8 relative transition-all duration-700 group-hover/qr:scale-[1.03]">
-                        {qrDataUrl ? (
-                          <img
-                            src={qrDataUrl}
-                            alt="QR Verifikasi"
-                            className="w-[180px] md:w-[240px] h-[180px] md:h-[240px] block rounded-2xl"
+                  {/* QR ZONE (LARGE & CENTERED IN PDF) */}
+                  <div className="flex flex-col items-center pt-8 border-t-2 border-dashed border-slate-100 relative">
+                    <div className="bg-white p-5 rounded-[2.5rem] shadow-xl border border-slate-100 mb-6 group hover:scale-[1.02] transition-transform">
+                      {qrDataUrl ? (
+                        <img
+                          src={qrDataUrl}
+                          alt="QR Verifikasi"
+                          className="w-[180px] md:w-[220px] h-[180px] md:h-[220px] block rounded-xl"
+                        />
+                      ) : (
+                        <div className="w-[180px] h-[180px] flex items-center justify-center bg-slate-50 rounded-2xl animate-pulse">
+                          <Loader2
+                            className="animate-spin text-slate-200"
+                            size={32}
                           />
-                        ) : (
-                          <div className="w-[180px] md:w-[240px] h-[180px] md:h-[240px] flex items-center justify-center bg-slate-50 rounded-3xl animate-pulse">
-                            <Loader2
-                              className="animate-spin text-slate-200"
-                              size={32}
-                            />
-                          </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
-
-                    <p className="text-[10px] md:text-[12px] text-slate-400 font-black uppercase tracking-[0.7em] mb-6 text-center leading-relaxed">
-                      Tunjukkan Kode QR Saat Pengambilan Race Pack
+                    <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.5em] mb-4 text-center">
+                      Tunjukkan saat Pengambilan Race Pack
                     </p>
-
-                    <div className="flex items-center gap-3 bg-slate-50 px-10 py-3.5 rounded-full border border-slate-100 shadow-inner group/verified transition-all hover:bg-emerald-50 hover:border-emerald-100">
-                      <Verified size={18} className="text-emerald-500" />
-                      <span className="text-[10px] font-mono font-black text-slate-500 uppercase tracking-[0.2em]">
-                        E-Tiket Terverifikasi Sistem
+                    <div className="flex items-center gap-2 bg-slate-50 px-6 py-2 rounded-full border border-slate-100 shadow-inner">
+                      <Verified size={16} className="text-emerald-500" />
+                      <span className="text-[9px] font-mono font-black text-slate-500 uppercase tracking-widest leading-none">
+                        Official Verified Pass
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* FOOTER TIKET PREMIUM */}
-                <div className="bg-[#0F172A] py-12 md:py-16 text-center relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')]"></div>
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-white rounded-full flex items-center justify-center border-4 border-[#FDFBF7] shadow-xl">
-                    <Star className="text-[#D4AF37]" size={20} fill="#D4AF37" />
+                {/* Footer */}
+                <div className="bg-[#0F172A] py-10 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                    <Star className="text-[#D4AF37]" size={14} fill="#D4AF37" />
                   </div>
-
-                  <div className="relative z-10 space-y-3">
-                    <p className="text-white text-[10px] md:text-[12px] font-black tracking-[0.8em] uppercase opacity-50">
-                      WWW.SURABAYAHERITAGERUN.COM
-                    </p>
-                    <p className="text-white/20 text-[8px] md:text-[9px] uppercase tracking-[0.3em] px-12 max-w-2xl mx-auto leading-relaxed font-light italic">
-                      Harap membawa Kartu Identitas asli untuk proses
-                      pengambilan perlengkapan lari di lokasi acara.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* AKSI DOWNLOAD */}
-            <div className="space-y-6 mt-8 animate-fade-in-up">
-              {result.paymentStatus === "paid" ? (
-                <button
-                  onClick={handleDownloadPDF}
-                  disabled={downloading}
-                  className="w-full bg-[#0F172A] hover:bg-black text-white py-8 md:py-10 rounded-[2.5rem] md:rounded-[3.5rem] shadow-[0_30px_60px_rgba(15,23,42,0.3)] flex items-center justify-center gap-5 transition-all hover:-translate-y-2 active:scale-95 disabled:opacity-70 group relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-
-                  {downloading ? (
-                    <Loader2
-                      className="animate-spin text-[#D4AF37]"
-                      size={28}
-                    />
-                  ) : (
-                    <div className="relative">
-                      <Download
-                        className="text-[#D4AF37] group-hover:animate-bounce transition-all"
-                        size={28}
-                      />
-                      <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#0F172A]"></div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-black tracking-[0.3em] uppercase text-xs md:text-lg leading-none mb-1">
-                      {downloading ? "Mohon Tunggu..." : "Unduh E-Tiket Resmi"}
-                    </span>
-                    <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold italic">
-                      Format Cetak A4 Tersedia
-                    </span>
-                  </div>
-                </button>
-              ) : (
-                <div className="p-10 md:p-14 bg-white/60 backdrop-blur-md border border-white/80 rounded-[4rem] text-center shadow-2xl">
-                  <div className="w-20 h-20 bg-amber-100 rounded-3xl flex items-center justify-center mx-auto mb-8 text-amber-600 border border-amber-200 rotate-3 shadow-lg">
-                    <Clock size={40} className="animate-pulse" />
-                  </div>
-                  <h4 className="text-[#0F172A] font-black uppercase text-lg tracking-[0.2em] mb-3 leading-none">
-                    Pembayaran Tertunda
-                  </h4>
-                  <p className="text-slate-500 text-sm mb-10 max-w-[300px] mx-auto leading-relaxed font-medium">
-                    Selesaikan pembayaran Anda segera untuk mengaktifkan nomor
-                    BIB dan mengunduh tiket resmi.
+                  <p className="text-white text-[8px] font-black tracking-[0.6em] uppercase opacity-40">
+                    www.surabayaheritagerun.com
                   </p>
-
-                  <button
-                    onClick={() =>
-                      navigate("/payment", { state: { userData: result } })
-                    }
-                    className="bg-[#7B1818] text-white px-16 py-6 rounded-full font-black text-sm shadow-[0_20px_40px_rgba(123,24,24,0.3)] active:scale-95 hover:bg-black transition-all uppercase tracking-[0.3em] flex items-center gap-3 mx-auto"
-                  >
-                    Bayar Sekarang <Zap size={18} fill="white" />
-                  </button>
-                </div>
-              )}
-
-              {/* Verified Footer */}
-              <div className="flex justify-center items-center gap-8 py-10 opacity-30 grayscale transition-all hover:grayscale-0">
-                <div className="flex flex-col items-center">
-                  <Fingerprint size={24} />
-                  <span className="text-[8px] font-black uppercase mt-2">
-                    ID Biometrik
-                  </span>
-                </div>
-                <div className="w-[1px] h-8 bg-slate-300"></div>
-                <div className="flex flex-col items-center">
-                  <Crown size={24} />
-                  <span className="text-[8px] font-black uppercase mt-2">
-                    Heritage Elite
-                  </span>
                 </div>
               </div>
             </div>
+
+            {/* ACTION BUTTON (PDF A4) */}
+            {result.paymentStatus === "paid" ? (
+              <button
+                onClick={handleDownloadPDF}
+                disabled={downloading}
+                className="w-full bg-[#0F172A] hover:bg-black text-white py-6 md:py-8 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] flex items-center justify-center gap-4 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70 group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                {downloading ? (
+                  <Loader2 className="animate-spin text-[#D4AF37]" size={22} />
+                ) : (
+                  <Download
+                    className="text-[#D4AF37] group-hover:animate-bounce transition-all"
+                    size={22}
+                  />
+                )}
+                <span className="font-black tracking-[0.2em] uppercase text-xs md:text-sm">
+                  {downloading ? "Menjana PDF..." : "Unduh E-Tiket (PDF A4)"}
+                </span>
+              </button>
+            ) : (
+              <div className="p-10 bg-white border border-slate-100 rounded-[3rem] text-center shadow-xl">
+                <Clock
+                  size={40}
+                  className="mx-auto text-amber-500 mb-4 animate-pulse"
+                />
+                <h4 className="text-slate-900 font-black uppercase text-sm tracking-widest mb-2">
+                  Pembayaran Tertunda
+                </h4>
+                <button
+                  onClick={() =>
+                    navigate("/payment", { state: { userData: result } })
+                  }
+                  className="bg-[#7B1818] text-white px-10 py-4 rounded-full font-black text-xs shadow-lg active:scale-95 hover:bg-black transition-all uppercase tracking-widest"
+                >
+                  Bayar Sekarang
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       <style>{`
-         .animate-fade-in-up { 
-           animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-         }
-         @keyframes fadeInUp { 
-           from { opacity: 0; transform: translateY(40px); } 
-           to { opacity: 1; transform: translateY(0); } 
-         }
-         ::-webkit-scrollbar { width: 6px; }
+         .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+         ::-webkit-scrollbar { width: 5px; }
          ::-webkit-scrollbar-track { background: #FDFBF7; }
          ::-webkit-scrollbar-thumb { background: #7B1818; border-radius: 10px; }
-         
-         img { 
-           image-rendering: -webkit-optimize-contrast; 
-           backface-visibility: hidden;
-         }
-         
-         body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+         img { image-rendering: -webkit-optimize-contrast; }
       `}</style>
     </div>
   );
