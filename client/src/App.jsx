@@ -126,8 +126,7 @@ function App() {
 
                   {/* Informasi Copyright */}
                   <div className="text-gray-400 text-[10px] uppercase tracking-[0.2em]">
-                    &copy; 2026 Surabaya Heritage Run - Final Build. All rights
-                    reserved.
+                    &copy; 2026 Surabaya Heritage Run - All rights reserved
                   </div>
 
                   {/* Dekorasi Tambahan */}
