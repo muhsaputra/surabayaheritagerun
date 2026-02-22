@@ -567,59 +567,6 @@ const LandingPage = () => {
               ))}
             </div>
           </div>
-
-          {/* --- FOOTER MODERN --- */}
-          <footer className="bg-slate-900 pt-20 pb-10 relative overflow-hidden">
-            {/* Dekorasi Tekstur Halus */}
-            <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
-
-            <div className="max-w-6xl mx-auto px-6 relative z-10">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/10 pb-12">
-                {/* Branding Logo Area */}
-                <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                  <h3 className="text-2xl font-serif font-black text-white tracking-tighter leading-none mb-2">
-                    SURABAYA <span className="text-red-600">HERITAGE</span> RUN
-                  </h3>
-                  <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] opacity-80">
-                    Official Entry Pass 2026
-                  </p>
-                </div>
-
-                {/* Navigasi Link Cepat */}
-                <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-                  {[
-                    { name: "Kebijakan Privasi", to: "/privacy-policy" },
-                    { name: "Bantuan Teknis", to: "/contact-support" },
-                    { name: "Cek Status", to: "/check-status" },
-                  ].map((link, i) => (
-                    <Link
-                      key={i}
-                      to={link.to}
-                      className="text-white/50 hover:text-[#D4AF37] text-[11px] font-black uppercase tracking-widest transition-all hover:-translate-y-1 inline-block"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Copyright Area */}
-              <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-4 text-center">
-                <p className="text-white/20 text-[10px] font-medium tracking-wide">
-                  © 2026 Surabaya Heritage Run. All rights reserved.
-                  <span className="hidden md:inline mx-2">•</span>
-                  Build with Excellence.
-                </p>
-                <div className="flex items-center gap-4 opacity-20 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
-                  <p className="text-white text-[9px] font-bold uppercase tracking-widest">
-                    HUT Surabaya ke-733
-                  </p>
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
-                </div>
-              </div>
-            </div>
-          </footer>
         </div>
       </div>
 
