@@ -486,6 +486,113 @@ const LandingPage = () => {
         </div>
       </div>
 
+      {/* --- SECTION: SYARAT & KETENTUAN --- */}
+      <div className="py-24 bg-slate-50 border-t border-slate-100">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row gap-16">
+            {/* Sisi Kiri: Judul & Ilustrasi */}
+            <div className="md:w-1/3">
+              <div className="sticky top-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                  <FileText size={14} /> Official Rules
+                </div>
+                <h2 className="text-4xl md:text-5xl font-serif font-black text-slate-900 mb-6 leading-tight">
+                  Syarat & <br />
+                  <span className="text-red-600">Ketentuan</span>
+                </h2>
+                <p className="text-slate-500 leading-relaxed mb-8">
+                  Demi kenyamanan dan keamanan bersama, seluruh peserta wajib
+                  memahami dan mematuhi regulasi Surabaya Heritage Run 2026.
+                </p>
+                <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-start gap-4">
+                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
+                    <Info size={20} />
+                  </div>
+                  <p className="text-xs text-slate-500 leading-loose">
+                    Panitia berhak mendiskualifikasi peserta yang melanggar
+                    aturan tanpa pengembalian biaya pendaftaran.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Sisi Kanan: Daftar Aturan */}
+            <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                {
+                  icon: <UserCheck className="text-blue-600" />,
+                  title: "Kepesertaan",
+                  desc: "Peserta wajib dalam kondisi sehat fisik & mental. Usia minimal kategori 5K adalah 12 tahun.",
+                },
+                {
+                  icon: <Ban className="text-red-600" />,
+                  title: "Kebijakan Refund",
+                  desc: "Tiket yang sudah dibeli tidak dapat dibatalkan, diuangkan kembali, atau dipindahtangankan.",
+                },
+                {
+                  icon: <Medal className="text-amber-600" />,
+                  title: "Atribut Lari",
+                  desc: "Peserta wajib mengenakan Jersey resmi dan BIB Number yang terlihat jelas selama acara berlangsung.",
+                },
+                {
+                  icon: <Lock className="text-slate-700" />,
+                  title: "Keamanan Barang",
+                  desc: "Penitipan barang tersedia terbatas. Panitia tidak bertanggung jawab atas kehilangan barang berharga.",
+                },
+                {
+                  icon: <MapPin className="text-red-600" />,
+                  title: "Rute & Fasilitas",
+                  desc: "Rute lari melewati kawasan bersejarah. Water station tersedia di setiap titik yang telah ditentukan.",
+                },
+                {
+                  icon: <Clock className="text-emerald-600" />,
+                  title: "Batas Waktu (Cut-Off)",
+                  desc: "Panitia menerapkan batas waktu lari (COT) demi keselamatan dan pembukaan kembali arus lalu lintas.",
+                },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  className="bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-red-200 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 group"
+                >
+                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    {item.icon}
+                  </div>
+                  <h4 className="font-bold text-lg text-slate-900 mb-3">
+                    {item.title}
+                  </h4>
+                  <p className="text-sm text-slate-500 leading-relaxed italic">
+                    "{item.desc}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Footer Simple Section */}
+          <div className="mt-24 pt-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex flex-col items-center md:items-start">
+              <h3 className="text-xl font-serif font-black text-slate-900 tracking-tight">
+                SURABAYA <span className="text-red-600">HERITAGE</span> RUN
+              </h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.3em] mt-1">
+                Official Entry Pass 2026
+              </p>
+            </div>
+            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <a href="#" className="hover:text-red-600 transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="hover:text-red-600 transition-colors">
+                Contact Support
+              </a>
+              <a href="#" className="hover:text-red-600 transition-colors">
+                © 2026
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         @keyframes fade-in-up {
           from { opacity: 0; transform: translateY(30px); }
