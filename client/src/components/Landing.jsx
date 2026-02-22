@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import {
   Calendar,
@@ -20,9 +20,11 @@ import {
   Lock,
   Loader2,
   Medal,
+  MessageCircle,
+  ShieldCheck,
 } from "lucide-react";
-import { Link } from "react-router-dom"; // Pastikan Link diimport di bagian atas file
-// Pastikan file fisik di folder Anda benar-benar menggunakan ekstensi ini (.png/.jpg/.JPG)
+
+// Import Assets
 import heroImage from "../assets/images/GambarUtama.png";
 import gallery1 from "../assets/images/gallery1.jpg";
 import gallery2 from "../assets/images/gallery2.jpg";
@@ -35,12 +37,12 @@ import gallery8 from "../assets/images/gallery8.jpg";
 const LandingPage = () => {
   const navigate = useNavigate();
 
-  // --- STATE UNTUK TIMELINE & HARGA ---
+  // --- STATE ---
   const [timelineData, setTimelineData] = useState(null);
   const [loadingTimeline, setLoadingTimeline] = useState(true);
   const [activePrices, setActivePrices] = useState({ "5K": 0, "3K": 0 });
 
-  // --- 1. FETCH DATA DARI BACKEND ---
+  // --- FETCH DATA ---
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -63,6 +65,7 @@ const LandingPage = () => {
     fetchConfig();
   }, []);
 
+  // --- HELPERS ---
   const formatPrice = (price) => {
     if (!price) return "-";
     return price / 1000 + "k";
@@ -94,9 +97,9 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="font-sans text-slate-800 pb-0 bg-slate-50 selection:bg-red-600 selection:text-white">
+    <div className="font-sans text-slate-800 bg-slate-50 selection:bg-red-600 selection:text-white overflow-x-hidden">
       {/* --- HERO SECTION --- */}
-      <div className="relative overflow-hidden text-white rounded-b-[2.5rem] shadow-2xl mb-16 h-auto min-h-[700px] flex items-center justify-center bg-slate-900">
+      <div className="relative overflow-hidden text-white rounded-b-[2.5rem] md:rounded-b-[4rem] shadow-2xl h-auto min-h-[600px] md:min-h-[800px] flex items-center justify-center bg-slate-900">
         <div className="absolute inset-0">
           <img
             src={heroImage}
@@ -104,50 +107,45 @@ const LandingPage = () => {
             className="w-full h-full object-cover object-center"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-        <div className="absolute inset-0 bg-red-900/10 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent"></div>
 
         <div className="relative z-10 w-full max-w-5xl mx-auto px-6 py-20 text-center">
           <div className="animate-fade-in-up flex flex-col items-center">
-            <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-md shadow-lg mb-8 group hover:bg-white/20 transition-all">
+            <div className="inline-flex items-center gap-3 px-6 py-2 bg-white/10 rounded-full border border-white/20 backdrop-blur-md mb-8">
               <span className="flex h-3 w-3 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
               </span>
-              <span className="text-white font-bold tracking-widest text-sm uppercase group-hover:text-red-400 transition-colors">
+              <span className="text-white font-bold tracking-widest text-[10px] md:text-xs uppercase">
                 HUT Surabaya ke-733
               </span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-serif font-black mb-6 leading-tight tracking-tighter drop-shadow-2xl">
+            <h1 className="text-5xl md:text-8xl font-serif font-black mb-6 leading-tight tracking-tighter">
               SURABAYA <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white drop-shadow-lg">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-white">
                 HERITAGE RUN
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-100 mb-10 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+            <p className="text-base md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto font-light">
               Minggu, <span className="text-white font-bold">24 Mei 2026</span>.
               Kobarkan semangat heroisme di kawasan Eropa Kecil. Start & Finish
-              di
-              <span className="text-red-500 font-bold bg-white/10 px-2 py-1 rounded ml-1">
-                Plaza Internatio
-              </span>
-              .
+              di Plaza Internatio.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
               <button
                 onClick={() => navigate("/register")}
-                className="px-10 py-5 bg-red-600 text-white font-bold text-lg rounded-xl shadow-[0_10px_30px_rgba(220,38,38,0.4)] hover:shadow-[0_15px_40px_rgba(220,38,38,0.6)] hover:bg-red-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
+                className="px-10 py-5 bg-red-600 text-white font-black text-sm rounded-2xl shadow-xl hover:bg-red-700 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
               >
-                Daftar Sekarang <ArrowRight size={22} strokeWidth={3} />
+                Daftar Sekarang <ArrowRight size={20} />
               </button>
               <button
                 onClick={() => navigate("/check-status")}
-                className="px-10 py-5 bg-white/10 text-white font-bold text-lg rounded-xl hover:bg-white hover:text-black transition-all flex items-center justify-center gap-2 border-2 border-white/30 backdrop-blur-sm"
+                className="px-10 py-5 bg-white/10 text-white font-black text-sm rounded-2xl hover:bg-white hover:text-black transition-all border-2 border-white/30 backdrop-blur-sm uppercase tracking-widest"
               >
-                <Ticket size={22} /> Cek Tiket
+                <Ticket size={20} className="mr-2 inline" /> Cek Tiket
               </button>
             </div>
           </div>
@@ -155,8 +153,8 @@ const LandingPage = () => {
       </div>
 
       {/* --- INFO EVENT GRID --- */}
-      <div className="max-w-6xl mx-auto px-4 -mt-32 relative z-20 mb-24">
-        <div className="bg-white rounded-[2rem] shadow-2xl shadow-slate-200 border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-3 gap-8 md:divide-x md:divide-slate-100">
+      <div className="max-w-6xl mx-auto px-4 -mt-20 md:-mt-32 relative z-20 mb-24">
+        <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-8 grid grid-cols-1 md:grid-cols-3 gap-8 md:divide-x md:divide-slate-100">
           {[
             {
               icon: <Calendar size={28} />,
@@ -176,15 +174,15 @@ const LandingPage = () => {
           ].map((item, idx) => (
             <div
               key={idx}
-              className="flex flex-col items-center text-center group cursor-default"
+              className="flex flex-col items-center text-center group"
             >
-              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-red-600 group-hover:bg-red-600 group-hover:text-white transition-all">
                 {item.icon}
               </div>
-              <h3 className="font-bold text-2xl text-slate-900 mb-1">
-                {item.title}
-              </h3>
-              <p className="text-slate-500 text-sm font-medium">{item.sub}</p>
+              <h3 className="font-bold text-xl text-slate-900">{item.title}</h3>
+              <p className="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">
+                {item.sub}
+              </p>
             </div>
           ))}
         </div>
@@ -192,111 +190,71 @@ const LandingPage = () => {
 
       {/* --- TIMELINE SECTION --- */}
       <div className="px-4 mx-auto max-w-6xl mb-24">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b-2 border-slate-200 pb-4">
-          <div>
-            <span className="text-red-600 font-bold tracking-widest uppercase text-sm">
-              Timeline
-            </span>
-            <h2 className="text-4xl font-serif font-bold text-slate-900 mt-2">
-              Jadwal Pendaftaran
-            </h2>
-          </div>
-          <div className="hidden md:block text-slate-400 font-medium">
-            Amankan slot sebelum habis!
-          </div>
+        <div className="text-center mb-16">
+          <span className="text-red-600 font-black tracking-[0.3em] uppercase text-xs">
+            Registration
+          </span>
+          <h2 className="text-4xl md:text-5xl font-serif font-black text-slate-900 mt-2">
+            Timeline Fase
+          </h2>
         </div>
 
         {loadingTimeline ? (
-          <div className="text-center py-20 flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center py-20 gap-4">
             <Loader2 className="animate-spin text-red-600" size={40} />
-            <p className="text-slate-500 font-medium">
-              Memuat jadwal terbaru...
-            </p>
-          </div>
-        ) : !timelineData || !timelineData.phases ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm">
-            <p className="text-slate-500">Jadwal pendaftaran belum tersedia.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {timelineData.phases.map((phase, index) => {
+            {timelineData?.phases?.map((phase, index) => {
               const isActive = index === timelineData.activePhaseIndex;
               const isPassed = index < timelineData.activePhaseIndex;
-              const isUpcoming = index > timelineData.activePhaseIndex;
-
-              const limit5K = phase.limits?.["5K"] || 0;
-              const limit3K = phase.limits?.["3K"] || 0;
-              const totalQuota = limit5K + limit3K;
               const totalSisa = timelineData.remaining?.totalSisa || 0;
-
-              let percentageLeft =
-                totalQuota > 0 ? (totalSisa / totalQuota) * 100 : 0;
-              if (percentageLeft > 100) percentageLeft = 100;
-              if (percentageLeft < 0) percentageLeft = 0;
-
-              const isSoldOut = isActive && totalSisa === 0;
+              const percentageLeft =
+                (totalSisa / (phase.limits?.["5K"] + phase.limits?.["3K"])) *
+                100;
 
               return (
                 <div
                   key={index}
-                  className={`relative p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between min-h-[300px]
-                  ${
-                    isActive
-                      ? "bg-slate-900 text-white shadow-2xl scale-[1.02] border-slate-900 z-10 ring-4 ring-slate-100"
-                      : isPassed
-                        ? "bg-slate-50 text-slate-400 border-slate-200 grayscale opacity-80"
-                        : "bg-white text-slate-900 border-slate-200 hover:border-red-200 hover:shadow-lg"
-                  }`}
+                  className={`p-8 rounded-[2.5rem] border transition-all duration-500 ${isActive ? "bg-slate-900 text-white shadow-2xl scale-105" : "bg-white border-slate-200 opacity-60"}`}
                 >
-                  <div>
-                    <div className="flex justify-between items-start mb-6">
-                      <div
-                        className={`p-3 rounded-xl transition-colors ${isActive ? "bg-white/10 text-red-500" : "bg-slate-100 text-slate-400"}`}
-                      >
-                        {getTimelineIcon(phase.name)}
-                      </div>
-                      {isActive && (
-                        <span className="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow-lg shadow-red-600/40">
-                          Sedang Dibuka
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-bold text-2xl mb-1">{phase.name}</h3>
-
+                  <div className="flex justify-between mb-6">
                     <div
-                      className={`inline-block px-3 py-1 rounded-lg mb-4 text-xs font-bold ${isActive ? "bg-red-600/20 text-red-400" : "bg-slate-100 text-slate-500"}`}
+                      className={`p-3 rounded-2xl ${isActive ? "bg-red-600 text-white" : "bg-slate-100 text-slate-400"}`}
                     >
-                      {getPhaseDescription(phase.name)}
+                      {getTimelineIcon(phase.name)}
                     </div>
+                    {isActive && (
+                      <span className="bg-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tighter animate-pulse">
+                        Live
+                      </span>
+                    )}
                   </div>
+                  <h3 className="font-black text-2xl mb-1 uppercase tracking-tight">
+                    {phase.name}
+                  </h3>
+                  <p className="text-xs font-bold text-slate-500 mb-6 uppercase tracking-widest">
+                    {getPhaseDescription(phase.name)}
+                  </p>
 
-                  {isActive ? (
-                    <div className="mt-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-bold text-slate-300 uppercase flex items-center gap-2">
-                          <Users size={14} className="text-red-500" /> Sisa Slot
-                        </span>
+                  {isActive && (
+                    <div className="mt-auto bg-white/5 p-4 rounded-2xl border border-white/10">
+                      <div className="flex justify-between text-xs font-bold mb-2 uppercase">
+                        <span className="text-slate-400">Kuota Tersisa</span>
                         <span
-                          className={`text-xl font-black ${totalSisa < 10 ? "text-red-500" : "text-white"}`}
+                          className={
+                            totalSisa < 10 ? "text-red-500" : "text-white"
+                          }
                         >
-                          {isSoldOut ? "HABIS" : totalSisa}
+                          {totalSisa}
                         </span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="w-full h-1 bg-slate-700 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-1000 ${percentageLeft < 20 ? "bg-red-600" : "bg-green-500"}`}
+                          className="h-full bg-red-600 transition-all duration-1000"
                           style={{ width: `${percentageLeft}%` }}
                         ></div>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="mt-4 pt-4 border-t border-slate-100/10">
-                      <p className="text-xs text-slate-400">
-                        {isPassed
-                          ? "Pendaftaran fase ini telah ditutup."
-                          : "Menunggu giliran fase ini dibuka."}
-                      </p>
                     </div>
                   )}
                 </div>
@@ -306,179 +264,136 @@ const LandingPage = () => {
         )}
       </div>
 
-      {/* --- KATEGORI LARI --- */}
-      {/* --- KATEGORI LARI: HERITAGE REDESIGN --- */}
-      <div className="relative py-32 overflow-hidden bg-[#FDFBF7]">
-        {/* Background Section with Deep Heritage Overlay */}
-        <div className="absolute inset-0 z-0">
+      {/* --- KATEGORI RUN Section --- */}
+      <div className="relative py-32 overflow-hidden bg-slate-900 rounded-[3rem] md:rounded-[5rem] mx-2 md:mx-6 mb-24">
+        <div className="absolute inset-0 opacity-20">
           <img
             src={heroImage}
-            alt="Background Surabaya Heritage"
-            loading="lazy"
-            className="w-full h-full object-cover object-center grayscale-[40%] opacity-30"
+            className="w-full h-full object-cover grayscale"
+            alt="background"
           />
-          {/* Overlay: Deep Maroon Gradient untuk Kedalaman Visual */}
-          <div className="absolute inset-0 z-0 bg-[#450a0a]/95 mix-blend-multiply"></div>
-          <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#450a0a] via-transparent to-[#450a0a]"></div>
         </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#450a0a] via-slate-900/90 to-slate-900"></div>
 
-        {/* Header Section: Typography Classic */}
-        <div className="text-center px-4 max-w-4xl mx-auto mb-20 relative z-10">
-          <div className="inline-block mb-4">
-            <span className="text-[#D4AF37] font-sans font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs bg-white/5 px-4 py-2 rounded-full border border-[#D4AF37]/20 backdrop-blur-sm">
-              The Soul of Surabaya.
+        <div className="relative z-10 max-w-6xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="text-[#D4AF37] font-black tracking-[0.4em] uppercase text-xs">
+              Categories
             </span>
+            <h2 className="text-5xl md:text-7xl font-serif font-black text-white mt-4 italic">
+              Kategori <span className="text-[#D4AF37]">Run</span>
+            </h2>
           </div>
-          <h2 className="text-5xl md:text-7xl font-serif font-black text-white mb-6 drop-shadow-2xl tracking-tight">
-            Kategori <span className="italic text-[#D4AF37]">Run</span>
-          </h2>
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="w-12 h-[1px] bg-[#D4AF37]/50"></div>
-            <Trophy className="text-[#D4AF37]" size={24} />
-            <div className="w-12 h-[1px] bg-[#D4AF37]/50"></div>
-          </div>
-          <p className="text-stone-300 text-lg md:text-xl font-light max-w-2xl mx-auto leading-relaxed font-sans">
-            Menelusuri jejak heroisme melalui rute ikonik kota tua. Pilih
-            tantanganmu dan jadilah bagian dari sejarah.
-          </p>
-        </div>
 
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row justify-center gap-10">
-            {/* 5K Category - The "Heroic Maroon" Card */}
-            <div className="group relative bg-[#9B1B1B] p-[2px] rounded-[2.5rem] flex-1 shadow-[0_30px_60px_-15px_rgba(155,27,27,0.5)] transition-all duration-500 hover:-translate-y-4">
-              <div className="bg-[#9B1B1B] p-10 rounded-[2.4rem] h-full flex flex-col border border-[#D4AF37]/30">
-                <div className="mb-10 flex justify-between items-start">
-                  <div className="bg-[#D4AF37] text-[#450a0a] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-lg">
-                    Most Popular
-                  </div>
-                  <Medal className="text-[#D4AF37] animate-pulse" size={36} />
-                </div>
-
-                <div className="mb-8">
-                  <h3 className="text-8xl font-serif font-black text-[#D4AF37] mb-2 leading-none tracking-tighter">
-                    5K
-                  </h3>
-                  <p className="text-white font-sans font-bold tracking-[0.3em] uppercase text-[11px] opacity-80">
-                    Heritage Professional Run
-                  </p>
-                </div>
-
-                <div className="space-y-4 mb-10">
-                  {[
-                    "Medali Finisher",
-                    "Jersey Eksklusif",
-                    "BIB Number",
-                    "Refreshment",
-                  ].map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 text-white/70 text-sm"
-                    >
-                      <CheckCircle size={16} className="text-[#D4AF37]" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-[#D4AF37]/20 pt-8 mt-auto">
-                  <p className="text-[#D4AF37]/60 text-[10px] font-bold uppercase tracking-widest mb-2">
-                    Investment Fee
-                  </p>
-                  <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-6xl font-serif font-black text-white">
-                      {formatPrice(activePrices["5K"])}
-                    </span>
-                    <span className="text-white/40 text-sm font-light">
-                      / pax
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-[#D4AF37] text-[#450a0a] font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-white hover:scale-[1.02] transition-all duration-300 flex justify-center items-center gap-3 shadow-[0_15px_30px_-10px_rgba(212,175,55,0.6)]"
-                  >
-                    Amankan Slot <ArrowRight size={18} strokeWidth={3} />
-                  </button>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            {/* 5K */}
+            <div className="bg-[#9B1B1B] p-10 rounded-[3rem] border border-[#D4AF37]/20 shadow-2xl hover:-translate-y-2 transition-all">
+              <div className="flex justify-between mb-12">
+                <span className="bg-[#D4AF37] text-maroon-900 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  Most Popular
+                </span>
+                <Medal className="text-[#D4AF37]" size={40} />
               </div>
+              <h3 className="text-8xl font-serif font-black text-white mb-2">
+                5K
+              </h3>
+              <p className="text-[#D4AF37] font-bold text-xs uppercase tracking-widest mb-8">
+                Heritage Professional Run
+              </p>
+              <div className="space-y-4 mb-12">
+                {[
+                  "Jersey Eksklusif",
+                  "Finisher Medal",
+                  "BIB Number",
+                  "Refreshments",
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 text-white/80 text-sm"
+                  >
+                    <CheckCircle size={16} className="text-[#D4AF37]" /> {item}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-baseline gap-2 mb-8">
+                <span className="text-5xl font-black text-white">
+                  {formatPrice(activePrices["5K"])}
+                </span>
+                <span className="text-white/40 text-xs uppercase font-bold tracking-widest">
+                  / Orang
+                </span>
+              </div>
+              <button
+                onClick={() => navigate("/register")}
+                className="w-full py-5 bg-[#D4AF37] text-slate-900 font-black text-sm uppercase tracking-[0.2em] rounded-2xl hover:bg-white transition-all"
+              >
+                Daftar Sekarang
+              </button>
             </div>
 
-            {/* 3K Category - The "Antique Cream" Card */}
-            <div className="group relative bg-white p-[2px] rounded-[2.5rem] flex-1 shadow-2xl transition-all duration-500 hover:-translate-y-4">
-              <div className="bg-[#FDFBF7] p-10 rounded-[2.4rem] h-full flex flex-col border border-stone-200">
-                <div className="mb-10 flex justify-between items-start">
-                  <div className="bg-stone-100 text-[#9B1B1B] px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] border border-stone-200">
-                    Family Friendly
-                  </div>
-                  <Users className="text-stone-300" size={36} />
-                </div>
-
-                <div className="mb-8">
-                  <h3 className="text-8xl font-serif font-black text-[#9B1B1B] mb-2 leading-none tracking-tighter">
-                    3K
-                  </h3>
-                  <p className="text-stone-400 font-sans font-bold tracking-[0.3em] uppercase text-[11px]">
-                    Heritage Fun Walk
-                  </p>
-                </div>
-
-                <div className="space-y-4 mb-10 text-stone-600">
-                  {[
-                    "Medali Finisher",
-                    "Jersey Eksklusif",
-                    "BIB Number",
-                    "Refreshment",
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 text-sm">
-                      <CheckCircle size={16} className="text-[#9B1B1B]" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t border-stone-200 pt-8 mt-auto">
-                  <p className="text-stone-400 text-[10px] font-bold uppercase tracking-widest mb-2">
-                    Investment Fee
-                  </p>
-                  <div className="flex items-baseline gap-2 mb-8">
-                    <span className="text-6xl font-serif font-black text-[#9B1B1B]">
-                      {formatPrice(activePrices["3K"])}
-                    </span>
-                    <span className="text-stone-400 text-sm font-light">
-                      / pax
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => navigate("/register")}
-                    className="w-full py-5 bg-white border-2 border-[#9B1B1B] text-[#9B1B1B] font-black text-xs uppercase tracking-[0.2em] rounded-2xl hover:bg-[#9B1B1B] hover:text-white hover:scale-[1.02] transition-all duration-300 flex justify-center items-center gap-3"
-                  >
-                    Daftar 3K <ArrowRight size={18} strokeWidth={3} />
-                  </button>
-                </div>
+            {/* 3K */}
+            <div className="bg-white p-10 rounded-[3rem] shadow-2xl hover:-translate-y-2 transition-all">
+              <div className="flex justify-between mb-12">
+                <span className="bg-slate-100 text-slate-400 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  Family Choice
+                </span>
+                <Users className="text-slate-300" size={40} />
               </div>
+              <h3 className="text-8xl font-serif font-black text-slate-900 mb-2">
+                3K
+              </h3>
+              <p className="text-red-600 font-bold text-xs uppercase tracking-widest mb-8">
+                Heritage Fun Walk
+              </p>
+              <div className="space-y-4 mb-12 text-slate-600">
+                {[
+                  "Jersey Eksklusif",
+                  "Finisher Medal",
+                  "BIB Number",
+                  "Refreshments",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <CheckCircle size={16} className="text-red-600" /> {item}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-baseline gap-2 mb-8 text-slate-900">
+                <span className="text-5xl font-black">
+                  {formatPrice(activePrices["3K"])}
+                </span>
+                <span className="text-slate-400 text-xs uppercase font-bold tracking-widest">
+                  / Orang
+                </span>
+              </div>
+              <button
+                onClick={() => navigate("/register")}
+                className="w-full py-5 border-2 border-slate-900 text-slate-900 font-black text-sm uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-900 hover:text-white transition-all"
+              >
+                Daftar 3K
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-4">
+      {/* --- JEJAK LANGKAH --- */}
+      <div className="py-24 bg-white px-4">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-serif font-bold text-slate-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-serif font-black text-slate-900 uppercase">
               Jejak <span className="text-red-600">Langkah</span>
             </h2>
-            <div className="w-20 h-1 bg-red-600 mx-auto"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[250px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-[200px]">
             {galleryImages.map((src, idx) => (
               <div
                 key={idx}
-                className={`relative group overflow-hidden rounded-2xl bg-slate-200 ${idx === 0 ? "md:col-span-2 md:row-span-2" : ""} ${idx === 3 ? "md:col-span-2" : ""}`}
+                className={`relative group overflow-hidden rounded-3xl ${idx === 0 ? "col-span-2 row-span-2" : ""} ${idx === 3 ? "col-span-2" : ""}`}
               >
                 <img
                   src={src}
-                  alt={`Galeri ${idx}`}
-                  className="w-full h-full object-cover transition-all duration-700 transform group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  alt="gallery"
                 />
               </div>
             ))}
@@ -487,77 +402,69 @@ const LandingPage = () => {
       </div>
 
       {/* --- SECTION: SYARAT & KETENTUAN --- */}
-      <div className="py-24 bg-slate-50 border-t border-slate-100">
+      <section className="py-24 bg-slate-50 border-t border-slate-100">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row gap-16">
-            {/* Sisi Kiri: Judul & Ilustrasi */}
             <div className="md:w-1/3">
-              <div className="sticky top-10">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+              <div className="sticky top-24">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
                   <FileText size={14} /> Official Rules
                 </div>
                 <h2 className="text-4xl md:text-5xl font-serif font-black text-slate-900 mb-6 leading-tight">
                   Syarat & <br />
-                  <span className="text-red-600">Ketentuan</span>
+                  <span className="text-red-600 italic">Ketentuan</span>
                 </h2>
-                <p className="text-slate-500 leading-relaxed mb-8">
-                  Demi kenyamanan dan keamanan bersama, seluruh peserta wajib
-                  memahami dan mematuhi regulasi Surabaya Heritage Run 2026.
-                </p>
                 <div className="p-6 bg-white rounded-3xl border border-slate-200 shadow-sm flex items-start gap-4">
-                  <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 shrink-0">
-                    <Info size={20} />
-                  </div>
-                  <p className="text-xs text-slate-500 leading-loose">
+                  <Info size={24} className="text-amber-500 shrink-0" />
+                  <p className="text-[11px] text-slate-500 leading-relaxed font-bold uppercase tracking-wider">
                     Panitia berhak mendiskualifikasi peserta yang melanggar
-                    aturan tanpa pengembalian biaya pendaftaran.
+                    aturan tanpa refund biaya.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Sisi Kanan: Daftar Aturan */}
             <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 {
                   icon: <UserCheck className="text-blue-600" />,
                   title: "Kepesertaan",
-                  desc: "Peserta wajib dalam kondisi sehat fisik & mental. Usia minimal kategori 5K adalah 12 tahun.",
+                  desc: "Peserta wajib sehat fisik & mental. Usia minimal 5K adalah 12 tahun.",
                 },
                 {
                   icon: <Ban className="text-red-600" />,
-                  title: "Kebijakan Refund",
-                  desc: "Tiket yang sudah dibeli tidak dapat dibatalkan, diuangkan kembali, atau dipindahtangankan.",
+                  title: "Refund",
+                  desc: "Tiket tidak dapat diuangkan kembali atau dipindahtangankan.",
                 },
                 {
                   icon: <Medal className="text-amber-600" />,
-                  title: "Atribut Lari",
-                  desc: "Peserta wajib mengenakan Jersey resmi dan BIB Number yang terlihat jelas selama acara berlangsung.",
+                  title: "Atribut",
+                  desc: "Wajib menggunakan Jersey resmi dan BIB yang terlihat jelas.",
                 },
                 {
                   icon: <Lock className="text-slate-700" />,
-                  title: "Keamanan Barang",
-                  desc: "Penitipan barang tersedia terbatas. Panitia tidak bertanggung jawab atas kehilangan barang berharga.",
+                  title: "Keamanan",
+                  desc: "Panitia tidak bertanggung jawab atas kehilangan barang berharga.",
                 },
                 {
                   icon: <MapPin className="text-red-600" />,
-                  title: "Rute & Fasilitas",
-                  desc: "Rute lari melewati kawasan bersejarah. Water station tersedia di setiap titik yang telah ditentukan.",
+                  title: "Fasilitas",
+                  desc: "Water station tersedia di rute ikonik kota tua.",
                 },
                 {
                   icon: <Clock className="text-emerald-600" />,
-                  title: "Batas Waktu (Cut-Off)",
-                  desc: "Panitia menerapkan batas waktu lari (COT) demi keselamatan dan pembukaan kembali arus lalu lintas.",
+                  title: "Cut-Off",
+                  desc: "Terdapat batas waktu lari (COT) demi keselamatan arus lalu lintas.",
                 },
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="bg-white p-8 rounded-[2rem] border border-slate-100 hover:border-red-200 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 group"
+                  className="bg-white p-8 rounded-[2.5rem] border border-slate-100 hover:border-red-200 hover:shadow-xl transition-all group"
                 >
-                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 group-hover:text-white transition-all">
                     {item.icon}
                   </div>
-                  <h4 className="font-bold text-lg text-slate-900 mb-3">
+                  <h4 className="font-black text-lg text-slate-900 mb-2 uppercase tracking-tight">
                     {item.title}
                   </h4>
                   <p className="text-sm text-slate-500 leading-relaxed italic">
@@ -567,62 +474,57 @@ const LandingPage = () => {
               ))}
             </div>
           </div>
-
-          {/* --- FOOTER MODERN --- */}
-          <footer className="bg-slate-900 pt-20 pb-10 relative overflow-hidden">
-            {/* Dekorasi Tekstur Halus */}
-            <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
-
-            <div className="max-w-6xl mx-auto px-6 relative z-10">
-              <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/10 pb-12">
-                {/* Branding Logo Area */}
-                <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                  <h3 className="text-2xl font-serif font-black text-white tracking-tighter leading-none mb-2">
-                    SURABAYA <span className="text-red-600">HERITAGE</span> RUN
-                  </h3>
-                  <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] opacity-80">
-                    Official Entry Pass 2026
-                  </p>
-                </div>
-
-                {/* Navigasi Link Cepat */}
-                <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-                  {[
-                    { name: "Kebijakan Privasi", to: "/privacy-policy" },
-                    { name: "Bantuan Teknis", to: "/contact-support" },
-                    { name: "Cek Status", to: "/check-status" },
-                  ].map((link, i) => (
-                    <Link
-                      key={i}
-                      to={link.to}
-                      className="text-white/50 hover:text-[#D4AF37] text-[11px] font-black uppercase tracking-widest transition-all hover:-translate-y-1 inline-block"
-                    >
-                      {link.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Copyright Area */}
-              <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-4 text-center">
-                <p className="text-white/20 text-[10px] font-medium tracking-wide">
-                  © 2026 Surabaya Heritage Run. All rights reserved.
-                  <span className="hidden md:inline mx-2">•</span>
-                  Build with Excellence.
-                </p>
-                <div className="flex items-center gap-4 opacity-20 grayscale transition-all hover:opacity-100 hover:grayscale-0">
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
-                  <p className="text-white text-[9px] font-bold uppercase tracking-widest">
-                    HUT Surabaya ke-733
-                  </p>
-                  <div className="w-1 h-1 bg-white rounded-full"></div>
-                </div>
-              </div>
-            </div>
-          </footer>
         </div>
-      </div>
+      </section>
 
+      {/* --- FOOTER MODERN --- */}
+      <footer className="bg-slate-900 pt-20 pb-10 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-12 border-b border-white/10 pb-12">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left">
+              <h3 className="text-2xl font-serif font-black text-white tracking-tighter leading-none mb-2">
+                SURABAYA <span className="text-red-600">HERITAGE</span> RUN
+              </h3>
+              <p className="text-[#D4AF37] text-[10px] font-bold uppercase tracking-[0.4em] opacity-80 italic">
+                The Soul of Surabaya • 2026
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-8 md:gap-12">
+              {[
+                { name: "Kebijakan Privasi", to: "/privacy-policy" },
+                { name: "Bantuan Teknis", to: "/contact-support" },
+                { name: "Cek Status", to: "/check-status" },
+              ].map((link, i) => (
+                <Link
+                  key={i}
+                  to={link.to}
+                  className="text-white/50 hover:text-[#D4AF37] text-[11px] font-black uppercase tracking-widest transition-all hover:-translate-y-1"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">
+              © 2026 Surabaya Heritage Run. Built with Excellence.
+            </p>
+            <div className="flex items-center gap-4 opacity-30 grayscale transition-all hover:opacity-100 hover:grayscale-0">
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+              <p className="text-white text-[9px] font-black uppercase tracking-[0.4em]">
+                HUT Surabaya 733
+              </p>
+              <div className="w-1 h-1 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* --- STYLES --- */}
       <style>{`
         @keyframes fade-in-up {
           from { opacity: 0; transform: translateY(30px); }
