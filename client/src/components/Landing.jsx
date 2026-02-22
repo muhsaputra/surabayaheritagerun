@@ -20,7 +20,6 @@ import {
   Lock,
   Loader2,
   Medal,
-  MessageCircle,
 } from "lucide-react";
 
 // Import Assets
