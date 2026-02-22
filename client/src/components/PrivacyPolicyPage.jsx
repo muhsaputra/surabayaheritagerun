@@ -1,5 +1,6 @@
 import React from "react";
-import { ArrowLeft, ShieldLock, Eye, Server, UserCheck } from "lucide-react";
+// GANTI ShieldLock menjadi ShieldCheck
+import { ArrowLeft, ShieldCheck, Eye, Server, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PrivacyPolicyPage = () => {
@@ -59,7 +60,8 @@ const PrivacyPolicyPage = () => {
           <section>
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600">
-                <ShieldLock size={24} />
+                {/* Menggunakan ShieldCheck di sini */}
+                <ShieldCheck size={24} />
               </div>
               <h2 className="text-2xl font-black uppercase tracking-tight">
                 Keamanan Informasi
