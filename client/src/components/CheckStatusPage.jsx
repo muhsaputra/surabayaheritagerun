@@ -260,7 +260,7 @@ const CheckStatusPage = () => {
                       <span className="text-[8px] font-black uppercase opacity-60 tracking-[0.2em] mb-1 block text-slate-400">
                         Ukuran Jersey
                       </span>
-                      <p className="text-3xl md:text-4xl font-black uppercase leading-none tracking-tighter">
+                      <p className="text-3xl md:text-2xl font-black uppercase leading-none tracking-tighter">
                         {result.jerseySize}
                       </p>
                     </div>
